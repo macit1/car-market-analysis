@@ -1,0 +1,4 @@
+pydantic
+fake-useragent
+requests
+beautifulsoup4
