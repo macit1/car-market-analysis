@@ -1,4 +1,4 @@
-# Belgian Car Market Scraper
+# Car Market Scraper
 
 ## 🎯 Project Objective
 A modular, robust web scraping pipeline designed to extract used car listings from the Belgian automotive market. The goal is to scrape at least 100 listings per target site, rigorously validate the extracted data, and export it safely to timestamped CSV format for analysis.
