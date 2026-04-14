@@ -27,3 +27,7 @@ logs/
 
 # Data (optional - remove this line if you want to track scraped data)
 data/
+
+# Dashboard
+dashboard/data.json
+dashboard/__pycache__/
