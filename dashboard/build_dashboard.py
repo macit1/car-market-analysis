@@ -77,6 +77,9 @@ def build():
     raw = pd.concat(frames, ignore_index=True)
     print(f"\nRaw rows (before cleaning): {len(raw)}")
 
+    raw = raw.drop_duplicates(subset=["listing_url"], keep="last")
+    print(f"Unique rows after deduplication: {len(raw)}")
+
     # ── 3. Normalise model ──────────────────────────────────────────
     raw["model"] = raw["model"].astype(str).str.title()
 
