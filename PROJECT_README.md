@@ -1,43 +1,82 @@
-# Car Market Scraper
+# 🚗 Belgium SUV Market — Data Pipeline
 
-## 🎯 Project Objective
-A modular, robust web scraping pipeline designed to extract used car listings from the Belgian automotive market. The goal is to scrape at least 100 listings per target site, rigorously validate the extracted data, and export it safely to timestamped CSV format for analysis.
+An end-to-end project that **scrapes**, **cleans**, and **visualises** used SUV listings from the Belgian automotive market. The pipeline runs automatically across multiple sources and models, delivering a polished interactive dashboard for market analysis.
 
-## 🏢 Target Websites
-1. **2dehands.be**
-2. **AutoScout24.be**
-3. **vroom.be**
+---
 
-## 🏗️ Technical Architecture & Stack
-The project is built entirely in Python using modern, anti-detection techniques and strict data modeling.
+## 🎯 What This Project Does
 
-*   **Browser Automation & Anti-Detection:** `undetected-chromedriver` is utilized to bypass common bot-mitigation systems. It incorporates randomized request delays, dynamic `User-Agent` rotation (via `fake_useragent`), and automatic cookie-clearing every 50 requests.
-*   **Data Validation:** `Pydantic` models (`models.py`) rigidly validate every extracted listing. Prices and mileages are automatically parsed into integers (stripping out currency symbols and whitespace). Listings missing critical fields (make, model, price) or featuring invalid years are dynamically skipped.
-*   **Modular Design:** 
-    *   `base_scraper.py`: Handles all the complex, shared browser management tasks, robust error handling, and CSV exporting.
-    *   `scrapers/*.py`: Individual boilerplate files for 2dehands, AutoScout24, and vroom, keeping site-specific logic isolated.
-    *   `main.py`: The orchestrator that initializes and executes all scrapers in sequence.
+1. 🕷️ **Scrapes** live listings from Belgian car platforms (AutoScout24, Cardoen)
+2. 🧹 **Cleans & deduplicates** raw data into a single structured dataset
+3. 📊 **Visualises** the results in an interactive browser-based dashboard
 
-## 🗂️ Current File Structure
+**Target models:** Hyundai Tucson · Nissan Qashqai · Škoda Karoq
+
+---
+
+## 🗂️ Project Structure
+
 ```
-belgian_car_scraper/
+Belgium_Car_Market/
 │
-├── main.py                     # Pipeline orchestrator
-├── models.py                   # Pydantic schema for validation (CarListing)
-├── requirements.txt            # Python dependencies
+├── 📄 PROJECT_README.md          # You are here
 │
-├── scrapers/
-│   ├── base_scraper.py         # Shared scraping logic (browser, Pydantic, CSV save)
-│   ├── autoscout_scraper.py    # Target: AutoScout24
-│   ├── twodehands_scraper.py   # Target: 2dehands
-│   └── vroom_scraper.py        # Target: vroom
+├── 🕷️ car_scraper/               # Scraping pipeline
+│   ├── main.py                   # Run this to scrape
+│   ├── README.md                 # Scraper docs
+│   └── ...
 │
-└── utils/
-    ├── formatters.py           # Functions for data cleaning (price, mileage)
-    └── logger.py               # Custom logging configuration
+└── 📊 dashboard/                 # Analytics dashboard
+    ├── index.html                # Open this in a browser
+    ├── build_dashboard.py        # Run this to build data.json
+    └── README.md                 # Dashboard docs
 ```
 
-## ⏭️ Next Steps (Pending Implementation)
-The primary scaffold is 100% complete. The next development phase involves:
-1.  **DOM Inspection:** Navigating to each target site to map out the specific CSS/XPath selectors for properties like `price`, `make`, `model`, `mileage`, and pagination components.
-2.  **Logic Injection:** Filling out the `run()` methods within `autoscout_scraper.py`, `twodehands_scraper.py`, and `vroom_scraper.py` using the identified DOM selectors to parse the HTML and populate the Pydantic models.
+---
+
+## ⚡ Quick Start
+
+```bash
+# 1. Install scraper dependencies
+pip install -r car_scraper/requirements.txt
+
+# 2. Scrape listings (writes CSV files to car_scraper/data/raw/)
+cd car_scraper && python main.py
+
+# 3. Build the dashboard dataset
+python dashboard/build_dashboard.py
+
+# 4. Serve and open the dashboard
+cd dashboard && python -m http.server 8000
+# → open http://localhost:8000
+```
+
+---
+
+## 📦 Components
+
+### 🕷️ [Scraper](./car_scraper/README.md)
+Request-based scraping pipeline targeting AutoScout24.be and Cardoen.be. Extracts price, mileage, year, fuel type, transmission, and listing URL for each vehicle. Exports timestamped CSV files per source. See [`car_scraper/README.md`](./car_scraper/README.md) for full details.
+
+### 📊 [Dashboard](./dashboard/README.md)
+A single-file HTML dashboard powered by Chart.js. Loads `data.json` and renders four interactive charts, seven real-time filters, six KPI cards, and a sortable listings table. See [`dashboard/README.md`](./dashboard/README.md) for full details.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Tools |
+|---|---|
+| Scraping | Python, `requests`, `BeautifulSoup` |
+| Validation | `Pydantic` |
+| Data processing | `pandas` |
+| Dashboard | HTML, CSS, Vanilla JS, Chart.js |
+
+---
+
+## 📌 Data Sources
+
+| Source | Type | URL |
+|---|---|---|
+| AutoScout24.be | Request-based | [autoscout24.be](https://www.autoscout24.be) |
+| Cardoen.be | Request-based | [cardoen.be](https://www.cardoen.be) |
