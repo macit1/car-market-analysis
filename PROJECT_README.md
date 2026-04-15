@@ -1,4 +1,4 @@
-# 🚗 Belgium SUV Market — Data Pipeline
+# 🚗 SUV Market Analysis — Data Pipeline
 
 An end-to-end project that **scrapes**, **cleans**, and **visualises** used SUV listings from the Belgian automotive market. The pipeline runs automatically across multiple sources and models, delivering a polished interactive dashboard for market analysis.
 
