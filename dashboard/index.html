@@ -25,6 +25,17 @@
             --glow: rgba(0, 0, 0, 0.1);
         }
 
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --panel2: #334155;
+            --border: #334155;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --accent: #f8fafc;
+            --glow: rgba(0, 0, 0, 0.5);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -39,6 +50,7 @@
             padding: 32px 48px;
             line-height: 1.6;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* ── Header ── */
@@ -75,6 +87,30 @@
             font-weight: 600;
         }
 
+        .theme-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 6px;
+            margin-right: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .theme-btn:hover {
+            color: var(--text);
+            background: var(--panel2);
+        }
+
+        .theme-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
         /* ── KPI Cards ── */
         .kpis {
             display: grid;
@@ -91,7 +127,7 @@
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 20px;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease;
             cursor: default;
         }
 
@@ -113,7 +149,7 @@
             font-size: 26px;
             font-weight: 700;
             margin-top: 8px;
-            background: linear-gradient(180deg, #1e293b, #64748b);
+            background: linear-gradient(180deg, var(--text), var(--muted));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
@@ -150,14 +186,14 @@
 
         .filter select {
             width: 100%;
-            background: #ffffff;
+            background: var(--bg);
             color: var(--text);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 8px 36px 8px 12px;
             font-size: 13px;
             font-family: 'Inter', sans-serif;
-            transition: border-color 0.2s ease;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.2s ease;
             outline: none;
             cursor: pointer;
             -webkit-appearance: none;
@@ -168,7 +204,7 @@
         }
 
         .filter select option {
-            background: #ffffff;
+            background: var(--bg);
             color: var(--text);
         }
 
@@ -202,8 +238,9 @@
             right: 0;
             top: 14px;
             height: 4px;
-            background: rgba(0, 0, 0, 0.05);
+            background: var(--border);
             border-radius: 4px;
+            transition: background-color 0.3s ease;
         }
 
         .dual .fill {
@@ -346,7 +383,7 @@
             border-bottom: 1px solid var(--border);
             cursor: pointer;
             user-select: none;
-            transition: color 0.15s ease;
+            transition: color 0.15s ease, border-color 0.3s ease;
         }
 
         th:hover {
@@ -356,7 +393,7 @@
         td {
             padding: 11px 14px;
             border-bottom: 1px solid var(--border);
-            transition: all 0.15s ease;
+            transition: all 0.15s ease, border-color 0.3s ease;
         }
 
         tr:hover td {
@@ -399,23 +436,23 @@
 
         /* ── Reset Button ── */
         button.reset {
-            background: var(--accent);
-            color: #ffffff;
-            border: none;
+            background: var(--panel2);
+            color: var(--text);
+            border: 1px solid var(--border);
             padding: 10px 22px;
             border-radius: 8px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
             font-size: 13px;
             font-family: 'Inter', sans-serif;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
             letter-spacing: 0.2px;
         }
 
         button.reset:hover {
-            filter: brightness(1.75);
             transform: translateY(-1px);
-            box-shadow: 0 4px 16px var(--glow);
+            box-shadow: 0 4px 6px -1px var(--glow);
+            border-color: var(--muted);
         }
 
         button.reset:active {
@@ -446,9 +483,11 @@
             <h1>SUV Market</h1>
             <p class="sub">Belgium Region Dataset · Tucson, Qashqai, Karoq</p>
         </div>
-        <div class="header-meta">
-            Updated <span id="dataDate" class="highlight">April 2026</span> &nbsp;·&nbsp; <span id="totalCount"
-                class="highlight">0</span> active listings
+        <div class="header-meta" style="display: flex; align-items: center;">
+            <button id="themeToggle" class="theme-btn" aria-label="Toggle Dark Mode" title="Toggle Theme">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
+            <span>Updated <span id="dataDate" class="highlight">...</span> &nbsp;·&nbsp; <span id="totalCount" class="highlight">0</span> active listings</span>
         </div>
     </header>
 
@@ -572,6 +611,28 @@
         let charts = {};
         let sortKey = 'price', sortAsc = true;
 
+        // Theme Toggle Logic
+        let isDark = localStorage.getItem('theme') === 'dark';
+        if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            isDark = !isDark;
+            if (isDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            }
+            refresh(); // Redraw charts with new colors
+        });
+
+        function getChartColors() {
+            return isDark 
+                ? { text: '#f8fafc', muted: '#94a3b8', grid: '#334155', border: '#1e293b' }
+                : { text: '#334155', muted: '#666666', grid: '#eaeaea', border: '#ffffff' };
+        }
+
         function getFiltered() {
             const mo = fModel.value, s = fSource.value, f = fFuel.value, t = fTrans.value;
             const yMin = +fYearMin.value, yMax = +fYearMax.value;
@@ -644,18 +705,19 @@
                     pointHoverBorderWidth: 2
                 }];
             }
+            const cc = getChartColors();
             if (charts.s) charts.s.destroy();
             charts.s = new Chart(document.getElementById('scatter'), {
                 type: 'scatter',
                 data: { datasets },
                 options: {
                     plugins: {
-                        legend: { display: colorByModel, position: 'top', onClick: null, labels: { color: '#334155', font: { size: 11 }, boxWidth: 12 } },
+                        legend: { display: colorByModel, position: 'top', onClick: null, labels: { color: cc.text, font: { size: 11 }, boxWidth: 12 } },
                         tooltip: { callbacks: { label: c => `${c.raw.model} ${c.raw.year} · ${eur(c.raw.price)} · ${fmt(c.raw.mileage)}km · ${c.raw.fuel}` } }
                     },
                     scales: {
-                        x: { min: 0, title: { display: true, text: 'Mileage (km)', color: '#666666' }, ticks: { color: '#666666', callback: v => fmt(v) }, grid: { color: '#eaeaea' } },
-                        y: { beginAtZero: false, title: { display: true, text: 'Price (€)', color: '#666666' }, ticks: { color: '#666666', callback: v => eur(v) }, grid: { color: '#eaeaea' } }
+                        x: { min: 0, title: { display: true, text: 'Mileage (km)', color: cc.muted }, ticks: { color: cc.muted, callback: v => fmt(v) }, grid: { color: cc.grid } },
+                        y: { beginAtZero: false, title: { display: true, text: 'Price (€)', color: cc.muted }, ticks: { color: cc.muted, callback: v => eur(v) }, grid: { color: cc.grid } }
                     }
                 }
             });
@@ -668,6 +730,7 @@
                 const groups = {}; d.forEach(r => { (groups[r.year] = groups[r.year] || []).push(r.price) });
                 const means = yrs.map(y => mean(groups[y]));
                 const counts = yrs.map(y => groups[y].length);
+                const cc = getChartColors();
                 if (charts.y) charts.y.destroy();
                 charts.y = new Chart(document.getElementById('byYear'), {
                     type: 'bar',
@@ -676,7 +739,7 @@
                         onClick: (e, els) => { if (!els.length) return; const y = yrs[els[0].index]; toggleYearFilter(y); },
                         onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default' },
                         plugins: { legend: { display: false }, tooltip: { callbacks: { afterLabel: c => `n=${counts[c.dataIndex]} (click to filter)` } } },
-                        scales: { x: { ticks: { color: '#94a3b8' }, grid: { display: false } }, y: { ticks: { color: '#94a3b8', callback: v => eur(v) }, grid: { color: '#2d3748' } } }
+                        scales: { x: { ticks: { color: cc.muted }, grid: { display: false } }, y: { ticks: { color: cc.muted, callback: v => eur(v) }, grid: { color: cc.grid } } }
                     }
                 });
             } else {
@@ -689,6 +752,7 @@
                     });
                     return { label: m, data, backgroundColor: modelColor(m) };
                 });
+                const cc = getChartColors();
                 if (charts.y) charts.y.destroy();
                 charts.y = new Chart(document.getElementById('byYear'), {
                     type: 'bar',
@@ -697,10 +761,10 @@
                         onClick: (e, els) => { if (!els.length) return; const y = yrs[els[0].index]; toggleYearFilter(y); },
                         onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default' },
                         plugins: {
-                            legend: { position: 'top', onClick: null, labels: { color: '#334155', font: { size: 11 }, boxWidth: 12 } },
+                            legend: { position: 'top', onClick: null, labels: { color: cc.text, font: { size: 11 }, boxWidth: 12 } },
                             tooltip: { callbacks: { afterLabel: () => 'click to filter year' } }
                         },
-                        scales: { x: { ticks: { color: '#666666' }, grid: { display: false } }, y: { ticks: { color: '#666666', callback: v => eur(v) }, grid: { color: '#eaeaea' } } }
+                        scales: { x: { ticks: { color: cc.muted }, grid: { display: false } }, y: { ticks: { color: cc.muted, callback: v => eur(v) }, grid: { color: cc.grid } } }
                     }
                 });
             }
@@ -712,10 +776,11 @@
             const labels = order.filter(m => g[m]);
             const vals = labels.map(m => g[m]);
             const colors = labels.map(modelColor);
+            const cc = getChartColors();
             if (charts.f) charts.f.destroy();
             charts.f = new Chart(document.getElementById('byFuel'), {
                 type: 'doughnut',
-                data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderColor: '#ffffff', borderWidth: 2, hoverOffset: 8 }] },
+                data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderColor: cc.border, borderWidth: 2, hoverOffset: 8 }] },
                 options: {
                     onClick: (evt, els) => {
                         if (!els.length) return;
@@ -725,7 +790,7 @@
                     },
                     onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default' },
                     plugins: {
-                        legend: { position: 'right', labels: { color: '#334155', font: { size: 12 } } },
+                        legend: { position: 'right', labels: { color: cc.text, font: { size: 12 } } },
                         tooltip: { callbacks: { label: c => `${c.label}: ${c.raw} listings (click to filter)` } }
                     }
                 }
@@ -739,13 +804,13 @@
             const labels = [];
             for (let i = 0; i < bins; i++)labels.push(eur(min + i * w));
             const models = ['Tucson', 'Qashqai', 'Karoq'].filter(m => d.some(r => r.model === m));
-            // build per-model counts so bars stack and color by model
+            const cc = getChartColors();
             const datasets = models.map(m => {
                 const counts = new Array(bins).fill(0);
                 d.filter(r => r.model === m).forEach(p => {
                     let i = Math.min(bins - 1, Math.floor((p.price - min) / w)); counts[i]++;
                 });
-                return { label: m, data: counts, backgroundColor: modelColor(m), borderColor: '#ffffff', borderWidth: 1 };
+                return { label: m, data: counts, backgroundColor: modelColor(m), borderColor: cc.border, borderWidth: 1 };
             });
             if (charts.h) charts.h.destroy();
             // expose bin bounds for click handler
@@ -758,12 +823,12 @@
                     onClick: (e, els) => { if (!els.length) return; const i = els[0].index; togglePriceFilter(binBounds[i][0], binBounds[i][1]); },
                     onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default' },
                     plugins: {
-                        legend: { display: datasets.length > 1, position: 'top', onClick: null, labels: { color: '#334155', font: { size: 11 }, boxWidth: 12 } },
+                        legend: { display: datasets.length > 1, position: 'top', onClick: null, labels: { color: cc.text, font: { size: 11 }, boxWidth: 12 } },
                         tooltip: { callbacks: { afterLabel: c => `${eur(binBounds[c.dataIndex][0])}–${eur(binBounds[c.dataIndex][1])} (click to filter)` } }
                     },
                     scales: {
-                        x: { stacked: true, ticks: { color: '#666666', font: { size: 10 } }, grid: { display: false } },
-                        y: { stacked: true, ticks: { color: '#666666' }, grid: { color: '#eaeaea' } }
+                        x: { stacked: true, ticks: { color: cc.muted, font: { size: 10 } }, grid: { display: false } },
+                        y: { stacked: true, ticks: { color: cc.muted }, grid: { color: cc.grid } }
                     }
                 }
             });
