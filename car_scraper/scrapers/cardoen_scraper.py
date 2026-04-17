@@ -7,10 +7,7 @@ class CardoenScraper(BaseScraper):
         super().__init__(site_name="cardoen", base_url="https://www.cardoen.be/fr/achat")
         
         # Re-construct base URL dynamically after config is loaded
-        if self.make:
-            self.base_url = f"{self.base_url}/{self.make}"
-            if self.model:
-                self.base_url = f"{self.base_url}/{self.model}"
+        # Base URL construction logic postponed / disabled for multi-target refactor
         self.base_url = f"{self.base_url}/offres/"
 
     def run(self):

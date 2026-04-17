@@ -10,7 +10,7 @@ def main():
     # Instantiate scrapers
     scrapers = [
         AutoScoutScraper(),
-        CardoenScraper()
+        # CardoenScraper()
     ]
     
     for scraper in scrapers:

@@ -17,6 +17,9 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 DATA_DIR = SCRIPT_DIR.parent / "car_scraper" / "data" / "raw"
 OUTPUT_FILE = SCRIPT_DIR / "data.json"
 
+# Set to True to use only the latest CSV per source; False = use all CSVs
+LATEST_ONLY = True
+
 # ── Fuel-type mapping (French scraper values → English dashboard labels) ─
 FUEL_MAP = {
     "Essence": "Petrol",
@@ -44,20 +47,25 @@ def normalise_transmission(val):
 
 def build():
     # ── 1. Collect CSV files ────────────────────────────────────────
-    patterns = [
-        str(DATA_DIR / "autoscout24_*.csv"),
-        str(DATA_DIR / "cardoen_*.csv"),
-    ]
-    files = []
-    for pat in patterns:
-        files.extend(glob(pat))
+    prefixes = ["autoscout24", "cardoen"]
+    all_files = []
+    for prefix in prefixes:
+        matches = sorted(glob(str(DATA_DIR / f"{prefix}_*.csv")))
+        if matches:
+            if LATEST_ONLY:
+                all_files.append(matches[-1])   # only the most recent per source
+            else:
+                all_files.extend(matches)
+
+    files = all_files
 
     if not files:
         print(f"ERROR: No CSV files found in {DATA_DIR}")
         print("Make sure car_scraper/data/raw/ contains autoscout24_*.csv or cardoen_*.csv files.")
         return
 
-    print(f"Found {len(files)} CSV file(s):")
+    mode = "LATEST ONLY" if LATEST_ONLY else "ALL FILES"
+    print(f"[{mode}] Using {len(files)} CSV file(s):")
     for f in files:
         print(f"  • {Path(f).name}")
 

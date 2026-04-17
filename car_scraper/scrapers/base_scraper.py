@@ -19,21 +19,23 @@ class BaseScraper:
         self.session = None
         self.request_count = 0
         self.listings = []
+        self.seen_urls = set()  # Deduplication barrier
         self.ua = UserAgent()
         
         # Load configuration
-        self.make = ""
-        self.model = ""
+        self.targets = []
         self.target_limit = 100
         
         try:
             with open("config.json", "r") as f:
                 config = json.load(f)
-                self.make = config.get("search_parameters", {}).get("make", "")
-                self.model = config.get("search_parameters", {}).get("model", "")
-                self.target_limit = config.get("extraction_limit", 100)
+                self.targets = config.get("targets", [])
+                self.target_limit = config.get("extraction_limit_per_target", 100)
         except Exception as e:
             logger.warning(f"Failed to load config.json: {e}", extra={'site': self.site_name})
+            
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.current_export_file = f"data/raw/{self.site_name}_{timestamp}.csv"
 
     def start_session(self):
         logger.info(f"Scraper session started.", extra={'site': self.site_name})
@@ -107,8 +109,14 @@ class BaseScraper:
 
         try:
             listing_model = CarListing(**raw_data)
+
+            # Deduplication: skip if URL already seen this session
+            if listing_model.listing_url in self.seen_urls:
+                logger.debug(f"Duplicate skipped: {listing_model.listing_url}", extra={'site': self.site_name})
+                return False
+
+            self.seen_urls.add(listing_model.listing_url)
             self.listings.append(listing_model)
-            # Log carefully avoiding spam, just log successful extraction URL
             logger.info(f"Listing extracted: {listing_model.listing_url}", extra={'site': self.site_name})
             return True
         except ValidationError as e:
@@ -116,28 +124,32 @@ class BaseScraper:
             return False
 
     def save_data(self):
-        """Exports listings array to a strictly formatted timestamped CSV string."""
+        """Appends current listings buffer to the cumulative CSV. Header written only once."""
         os.makedirs("data/raw", exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"data/raw/{self.site_name}_{timestamp}.csv"
-        
+
         if not self.listings:
-            logger.info("No listings extracted; skipping CSV generation.", extra={'site': self.site_name})
+            logger.debug("No new listings to save; skipping.", extra={'site': self.site_name})
             return
-            
+
         headers = list(CarListing.model_fields.keys())
-        
-        with open(filename, 'w', newline='', encoding='utf-8') as f:
-            if 'listing_url' in headers:
-                headers.remove('listing_url')
-                headers.append('listing_url')
-                
+        if 'listing_url' in headers:
+            headers.remove('listing_url')
+            headers.append('listing_url')
+
+        # Write header only if the file doesn't exist yet (first save of this run)
+        write_header = not os.path.exists(self.current_export_file)
+
+        with open(self.current_export_file, 'a', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=headers)
-            writer.writeheader()
+            if write_header:
+                writer.writeheader()
             for listing in self.listings:
                 writer.writerow(listing.model_dump())
-        
-        logger.info(f"Saved {len(self.listings)} listings to {filename}", extra={'site': self.site_name})
+
+        logger.info(f"Saved {len(self.listings)} new listings → {self.current_export_file}", extra={'site': self.site_name})
+
+        # Clear buffer so next save_data call doesn't re-write the same rows
+        self.listings.clear()
 
     def run(self):
         """Entrypoint for scraping logic. Must be implemented by specific site scrapers."""
