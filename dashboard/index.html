@@ -173,6 +173,8 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
+            position: relative;
+            z-index: 50;
         }
 
         .filter label {
@@ -474,6 +476,112 @@
                 font-size: 22px;
             }
         }
+
+        /* ── Multi-Select Dropdown ── */
+        .multiselect { position: relative; }
+        .ms-trigger {
+            width: 100%;
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+            user-select: none;
+            min-height: 36px;
+        }
+        .ms-trigger:hover { border-color: rgba(0,0,0,0.18); }
+        .ms-trigger.open { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+        .ms-trigger svg { width: 12px; height: 12px; flex-shrink: 0; transition: transform 0.2s; color: var(--muted); }
+        .ms-trigger.open svg { transform: rotate(180deg); }
+        .ms-label { font-size: 13px; color: var(--muted); flex: 1; }
+        .ms-chips { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+        .ms-chip {
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 2px 7px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text);
+            white-space: nowrap;
+        }
+        .ms-dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0; right: 0;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+            z-index: 200;
+            max-height: 230px;
+            overflow-y: auto;
+            display: none;
+            padding: 6px 0;
+        }
+        .ms-dropdown.open { display: block; }
+        .ms-dropdown::-webkit-scrollbar { width: 5px; }
+        .ms-dropdown::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
+        .ms-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .ms-item:hover { background: var(--panel2); }
+        .ms-item input[type=checkbox] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 15px; height: 15px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg);
+            cursor: pointer;
+            flex-shrink: 0;
+            position: relative;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .ms-item input[type=checkbox]:checked {
+            background: var(--text);
+            border-color: var(--text);
+        }
+        .ms-item input[type=checkbox]:checked::after {
+            content: '';
+            position: absolute;
+            left: 3px; top: 0px;
+            width: 5px; height: 9px;
+            border: 2px solid var(--bg);
+            border-top: none;
+            border-left: none;
+            transform: rotate(45deg);
+        }
+        .ms-swatch {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .ms-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 0;
+        }
+        .ms-item.ms-all {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 12px;
+            letter-spacing: 0.3px;
+        }
     </style>
 </head>
 
@@ -481,7 +589,7 @@
     <header class="app-header">
         <div>
             <h1>SUV Market</h1>
-            <p class="sub">Belgium Region Dataset · Tucson, Qashqai, Karoq</p>
+            <p class="sub" id="headerSub">Belgium Region Dataset · Loading…</p>
         </div>
         <div class="header-meta" style="display: flex; align-items: center;">
             <button id="themeToggle" class="theme-btn" aria-label="Toggle Dark Mode" title="Toggle Theme">
@@ -496,12 +604,13 @@
     <div class="filters">
         <div class="filter">
             <label>Model</label>
-            <select id="fModel">
-                <option value="">All models</option>
-                <option>Tucson</option>
-                <option>Qashqai</option>
-                <option>Karoq</option>
-            </select>
+            <div class="multiselect" id="modelMulti">
+                <div class="ms-trigger" id="modelTrigger">
+                    <span class="ms-label" id="modelLabel">All models</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="ms-dropdown" id="modelDropdown"></div>
+            </div>
         </div>
         <div class="filter">
             <label>Source</label>
@@ -598,8 +707,18 @@
     </div>
 
     <script>
-        const MODEL_COLORS = { Tucson: '#38bdf8', Qashqai: '#a78bfa', Karoq: '#34d399' };
+        // Dynamic palette: generates a distinct HSL color for each model
+        const PALETTE = [
+            '#38bdf8','#a78bfa','#34d399','#fb923c','#f472b6',
+            '#facc15','#4ade80','#818cf8','#f87171','#2dd4bf',
+            '#e879f9','#a3e635','#60a5fa','#fbbf24'
+        ];
+        let MODEL_COLORS = {};
         const modelColor = m => MODEL_COLORS[m] || '#94a3b8';
+        function buildModelColors(models) {
+            MODEL_COLORS = {};
+            models.forEach((m, i) => { MODEL_COLORS[m] = PALETTE[i % PALETTE.length]; });
+        }
         // jitter: small random offset to separate dots stacked on round numbers
         const jit = (v, amt) => v + (Math.random() - 0.5) * 2 * amt;
         let RAW = [];
@@ -633,12 +752,55 @@
                 : { text: '#334155', muted: '#666666', grid: '#eaeaea', border: '#ffffff' };
         }
 
+        // ── Multi-select model state ─────────────────────────────────────
+        const selectedModels = new Set();
+
+        function updateModelTrigger() {
+            const trigger = document.getElementById('modelTrigger');
+            const labelEl = document.getElementById('modelLabel');
+            if (selectedModels.size === 0) {
+                trigger.innerHTML = '';
+                const span = document.createElement('span');
+                span.className = 'ms-label'; span.id = 'modelLabel';
+                span.textContent = 'All models';
+                trigger.appendChild(span);
+            } else {
+                const chips = document.createElement('div');
+                chips.className = 'ms-chips';
+                [...selectedModels].forEach(m => {
+                    const c = document.createElement('span');
+                    c.className = 'ms-chip';
+                    c.textContent = m;
+                    c.style.borderLeftColor = modelColor(m);
+                    c.style.borderLeftWidth = '3px';
+                    chips.appendChild(c);
+                });
+                trigger.innerHTML = '';
+                trigger.appendChild(chips);
+            }
+            // re-add chevron
+            const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+            svg.setAttribute('viewBox','0 0 24 24'); svg.setAttribute('fill','none');
+            svg.setAttribute('stroke','currentColor'); svg.setAttribute('stroke-width','2');
+            svg.setAttribute('stroke-linecap','round'); svg.setAttribute('stroke-linejoin','round');
+            svg.innerHTML = '<polyline points="6 9 12 15 18 9"/>';
+            trigger.appendChild(svg);
+            if (document.getElementById('modelDropdown').classList.contains('open'))
+                trigger.classList.add('open');
+        }
+
         function getFiltered() {
-            const mo = fModel.value, s = fSource.value, f = fFuel.value, t = fTrans.value;
+            const s = fSource.value, f = fFuel.value, t = fTrans.value;
             const yMin = +fYearMin.value, yMax = +fYearMax.value;
             const pMin = +fPriceMin.value, pMax = +fPriceMax.value;
             const mMin = +fMileMin.value, mMax = +fMileMax.value;
-            return RAW.filter(r => (!mo || r.model === mo) && (!s || r.source === s) && (!f || r.fuel === f) && (!t || r.trans === t) && r.year >= yMin && r.year <= yMax && r.price >= pMin && r.price <= pMax && r.mileage >= mMin && r.mileage <= mMax);
+            return RAW.filter(r =>
+                (selectedModels.size === 0 || selectedModels.has(r.model)) &&
+                (!s || r.source === s) && (!f || r.fuel === f) && (!t || r.trans === t) &&
+                r.year >= yMin && r.year <= yMax &&
+                r.price >= pMin && r.price <= pMax &&
+                r.mileage >= mMin && r.mileage <= mMax
+            );
         }
 
         function median(arr) { if (!arr.length) return 0; const s = [...arr].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2 }
@@ -666,9 +828,9 @@
 
         function renderScatter(d) {
             if (!d.length) { if (charts.s) charts.s.destroy(); return }
-            const colorByModel = !fModel.value;
+            const colorByModel = selectedModels.size !== 1;  // single model selected → color by year
             const ymin = Math.min(...d.map(r => r.year)), ymax = Math.max(...d.map(r => r.year));
-            const models = ['Tucson', 'Qashqai', 'Karoq'].filter(m => d.some(r => r.model === m));
+            const models = [...new Set(RAW.map(r => r.model))].filter(m => d.some(r => r.model === m));
             const jx = 1500, jy = 250;
             let datasets;
             if (colorByModel) {
@@ -725,8 +887,9 @@
 
         function renderByYear(d) {
             const yrs = [...new Set(d.map(r => r.year))].sort((a, b) => a - b);
-            if (fModel.value) {
-                // single model: one bar per year
+            if (selectedModels.size === 1) {
+                // single model selected: one bar per year
+                const singleModel = [...selectedModels][0];
                 const groups = {}; d.forEach(r => { (groups[r.year] = groups[r.year] || []).push(r.price) });
                 const means = yrs.map(y => mean(groups[y]));
                 const counts = yrs.map(y => groups[y].length);
@@ -734,7 +897,7 @@
                 if (charts.y) charts.y.destroy();
                 charts.y = new Chart(document.getElementById('byYear'), {
                     type: 'bar',
-                    data: { labels: yrs, datasets: [{ label: fModel.value + ' avg €', data: means, backgroundColor: modelColor(fModel.value) }] },
+                    data: { labels: yrs, datasets: [{ label: singleModel + ' avg €', data: means, backgroundColor: modelColor(singleModel) }] },
                     options: {
                         onClick: (e, els) => { if (!els.length) return; const y = yrs[els[0].index]; toggleYearFilter(y); },
                         onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default' },
@@ -744,7 +907,7 @@
                 });
             } else {
                 // all models: grouped bars per year, one color per model
-                const models = ['Tucson', 'Qashqai', 'Karoq'].filter(m => d.some(r => r.model === m));
+                const models = [...new Set(RAW.map(r => r.model))].filter(m => d.some(r => r.model === m));
                 const datasets = models.map(m => {
                     const data = yrs.map(y => {
                         const arr = d.filter(r => r.model === m && r.year === y).map(r => r.price);
@@ -771,7 +934,7 @@
         }
 
         function renderByModel(d) {
-            const order = ['Tucson', 'Qashqai', 'Karoq'];
+            const order = [...new Set(RAW.map(r => r.model))];
             const g = {}; d.forEach(r => g[r.model] = (g[r.model] || 0) + 1);
             const labels = order.filter(m => g[m]);
             const vals = labels.map(m => g[m]);
@@ -785,7 +948,13 @@
                     onClick: (evt, els) => {
                         if (!els.length) return;
                         const clicked = labels[els[0].index];
-                        fModel.value = (fModel.value === clicked) ? '' : clicked;
+                        if (selectedModels.has(clicked)) selectedModels.delete(clicked);
+                        else selectedModels.add(clicked);
+                        // sync checkboxes
+                        document.querySelectorAll('#modelDropdown .ms-item input').forEach(cb => {
+                            cb.checked = selectedModels.has(cb.value);
+                        });
+                        updateModelTrigger();
                         refresh();
                     },
                     onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default' },
@@ -803,7 +972,7 @@
             const min = Math.min(...prices), max = Math.max(...prices), w = (max - min) / bins || 1;
             const labels = [];
             for (let i = 0; i < bins; i++)labels.push(eur(min + i * w));
-            const models = ['Tucson', 'Qashqai', 'Karoq'].filter(m => d.some(r => r.model === m));
+            const models = [...new Set(RAW.map(r => r.model))].filter(m => d.some(r => r.model === m));
             const cc = getChartColors();
             const datasets = models.map(m => {
                 const counts = new Array(bins).fill(0);
@@ -887,15 +1056,33 @@
         }
 
         function resetFilters() {
-            fModel.value = ''; fSource.value = ''; fFuel.value = ''; fTrans.value = '';
-            fYearMin.value = 2005; fYearMax.value = 2026;
-            fPriceMin.value = 2000; fPriceMax.value = 50000;
+            selectedModels.clear();
+            document.querySelectorAll('#modelDropdown .ms-item input').forEach(cb => cb.checked = false);
+            updateModelTrigger();
+            fSource.value = ''; fFuel.value = ''; fTrans.value = '';
+            fYearMin.value = fYearMin.min; fYearMax.value = fYearMax.max;
+            fPriceMin.value = fPriceMin.min; fPriceMax.value = fPriceMax.max;
             fMileMin.value = 0; fMileMax.value = 300000;
             refresh();
         }
 
-        ['fModel', 'fSource', 'fFuel', 'fTrans', 'fYearMin', 'fYearMax', 'fPriceMin', 'fPriceMax', 'fMileMin', 'fMileMax'].forEach(id => {
+        ['fSource', 'fFuel', 'fTrans', 'fYearMin', 'fYearMax', 'fPriceMin', 'fPriceMax', 'fMileMin', 'fMileMax'].forEach(id => {
             document.getElementById(id).addEventListener('input', refresh);
+        });
+
+        // Multi-select dropdown toggle
+        document.getElementById('modelTrigger').addEventListener('click', () => {
+            const dd = document.getElementById('modelDropdown');
+            const tr = document.getElementById('modelTrigger');
+            dd.classList.toggle('open');
+            tr.classList.toggle('open');
+        });
+        // Close when clicking outside
+        document.addEventListener('click', e => {
+            if (!document.getElementById('modelMulti').contains(e.target)) {
+                document.getElementById('modelDropdown').classList.remove('open');
+                document.getElementById('modelTrigger').classList.remove('open');
+            }
         });
         document.querySelectorAll('#tbl th[data-k]').forEach(th => {
             th.addEventListener('click', () => { const k = th.dataset.k; if (sortKey === k) sortAsc = !sortAsc; else { sortKey = k; sortAsc = true } renderTable(getFiltered()) });
@@ -910,10 +1097,97 @@
                 document.body.innerHTML = '<h1 style="color:#f87171;padding:40px">⚠ Could not load data.json<br><small style="font-weight:normal">Run via: python -m http.server 8000</small></h1>';
                 return;
             }
-            // populate fuel options from loaded data
+
+            // Build dynamic model color palette
+            const allModels = [...new Set(RAW.map(r => r.model))].sort();
+            buildModelColors(allModels);
+
+            // Populate model multi-select dropdown dynamically
+            const dd = document.getElementById('modelDropdown');
+
+            // ── Select All row ──────────────────────────────────────────
+            const allItem = document.createElement('div');
+            allItem.className = 'ms-item ms-all';
+            const allCb = document.createElement('input');
+            allCb.type = 'checkbox'; allCb.id = 'ms_all';
+            const allLbl = document.createElement('label');
+            allLbl.htmlFor = 'ms_all'; allLbl.textContent = 'Select All';
+            allLbl.style.cursor = 'pointer'; allLbl.style.flex = '1';
+            allItem.appendChild(allCb); allItem.appendChild(allLbl);
+            allItem.addEventListener('click', e => {
+                if (e.target !== allCb) allCb.click();
+            });
+            allCb.addEventListener('change', () => {
+                if (allCb.checked) {
+                    allModels.forEach(m => selectedModels.add(m));
+                } else {
+                    selectedModels.clear();
+                }
+                document.querySelectorAll('#modelDropdown .ms-item:not(.ms-all) input').forEach(cb => {
+                    cb.checked = allCb.checked;
+                });
+                updateModelTrigger();
+                refresh();
+            });
+            dd.appendChild(allItem);
+
+            // divider
+            const divider = document.createElement('div');
+            divider.className = 'ms-divider';
+            dd.appendChild(divider);
+
+            // helper: sync the Select All checkbox state
+            function syncAllCheckbox() {
+                allCb.checked = selectedModels.size === allModels.length;
+                allCb.indeterminate = selectedModels.size > 0 && selectedModels.size < allModels.length;
+            }
+
+            // ── Individual model rows ───────────────────────────────────
+            allModels.forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'ms-item';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox'; cb.value = m; cb.id = 'ms_' + m;
+                cb.addEventListener('change', () => {
+                    if (cb.checked) selectedModels.add(m);
+                    else selectedModels.delete(m);
+                    syncAllCheckbox();
+                    updateModelTrigger();
+                    refresh();
+                });
+                const swatch = document.createElement('span');
+                swatch.className = 'ms-swatch';
+                swatch.style.background = PALETTE[allModels.indexOf(m) % PALETTE.length];
+                const lbl = document.createElement('label');
+                lbl.htmlFor = 'ms_' + m; lbl.textContent = m;
+                lbl.style.cursor = 'pointer'; lbl.style.flex = '1';
+                item.appendChild(cb); item.appendChild(swatch); item.appendChild(lbl);
+                item.addEventListener('click', e => {
+                    if (e.target !== cb && e.target !== lbl) cb.click();
+                });
+                dd.appendChild(item);
+            });
+            updateModelTrigger();
+
+            // Populate fuel dropdown dynamically
             const fuels = [...new Set(RAW.map(r => r.fuel))].sort();
             const fSel = document.getElementById('fFuel');
             fuels.forEach(f => { const o = document.createElement('option'); o.value = f; o.textContent = f; fSel.appendChild(o) });
+
+            // Update header subtitle with discovered models
+            const makes = [...new Set(RAW.map(r => r.make || r.model.split(' ')[0]))].sort();
+            document.getElementById('headerSub').textContent =
+                `Belgium Region Dataset · ${allModels.length} models · ${[...new Set(RAW.map(r=>r.source))].join(', ')}`;
+
+            // Adjust price slider range to actual data
+            const prices = RAW.map(r => r.price);
+            const pMin = Math.floor(Math.min(...prices) / 1000) * 1000;
+            const pMax = Math.ceil(Math.max(...prices) / 1000) * 1000;
+            const priceMinEl = document.getElementById('fPriceMin');
+            const priceMaxEl = document.getElementById('fPriceMax');
+            priceMinEl.min = pMin; priceMinEl.max = pMax; priceMinEl.value = pMin;
+            priceMaxEl.min = pMin; priceMaxEl.max = pMax; priceMaxEl.value = pMax;
+
             refresh();
         }
         initDashboard();

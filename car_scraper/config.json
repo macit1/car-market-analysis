@@ -1,7 +1,61 @@
 {
-  "search_parameters": {
-    "make": "skoda",
-    "model": "karoq"
-  },
-  "extraction_limit": 1000
+  "targets": [
+    {
+      "make": "bmw",
+      "model": "x1"
+    },
+    {
+      "make": "bmw",
+      "model": "x2"
+    },
+    {
+      "make": "kia",
+      "model": "stonic"
+    },
+    {
+      "make": "citroen",
+      "model": "c4"
+    },
+    {
+      "make": "audi",
+      "model": "q3"
+    },
+    {
+      "make": "volkswagen",
+      "model": "tiguan"
+    },
+    {
+      "make": "volkswagen",
+      "model": "t-roc"
+    },
+    {
+      "make": "volkswagen",
+      "model": "taigo"
+    },
+    {
+      "make": "volkswagen",
+      "model": "t-cross"
+    },
+    {
+      "make": "hyundai",
+      "model": "kona"
+    },
+    {
+      "make": "peugeot",
+      "model": "3008"
+    },
+    {
+      "make": "peugeot",
+      "model": "2008"
+    },
+    {
+      "make": "toyota",
+      "model": "c-hr"
+    },
+    {
+      "make": "skoda",
+      "model": "karoq"
+    }
+  ],
+  "extraction_limit_per_target": 200
 }
