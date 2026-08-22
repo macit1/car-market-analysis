@@ -34,9 +34,22 @@ python main.py dashboard --dataset bmw320touring
 python main.py serve --port 9000
 ```
 
+```
+                    python main.py [stages...]
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        ▼                     ▼                     ▼
+     scrape               dashboard               serve
+  car_scraper/         dashboard/              dashboard/
+  scrape.py            build_dashboard.py      index.html
+        │                     │                     │
+        └──► data/raw/*.csv ──┴──► data.json ───────┘
+```
+
 The stages are deliberately independent — each one only reads what the previous
-one left on disk, so any of them runs on its own. Both components also stay
-`main.py` is the only entry point — the stages are modules, not scripts.
+one left on disk, so any of them runs on its own, and a failed scrape never
+costs you the dashboard. `main.py` is the only entry point: the stages are
+modules, not scripts.
 
 ---
 
