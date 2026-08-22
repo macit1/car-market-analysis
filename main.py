@@ -107,7 +107,7 @@ def main():
                          f"(default: scrape dashboard)")
     ap.add_argument("--site", action="append",
                     help="scrape stage: run only this site (repeatable)")
-    ap.add_argument("--dataset", default="de_market",
+    ap.add_argument("--dataset", default="belgium",
                     help="dashboard stage: which named dataset to build")
     ap.add_argument("--port", type=int, default=8000,
                     help="serve stage: port to listen on (default: 8000)")

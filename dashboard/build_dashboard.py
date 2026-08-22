@@ -23,7 +23,7 @@ OUTPUT_FILE = SCRIPT_DIR / "data.json"
 LATEST_ONLY = True
 
 # CSV filename prefixes to ingest (newest per prefix when LATEST_ONLY).
-PREFIXES = ["autoscout_de_market"]
+PREFIXES = ["autoscout24", "cardoen"]
 
 # Named datasets → (csv prefixes, output json). Lets one dashboard serve several
 # scrapes side by side instead of each build overwriting the last one.
@@ -32,9 +32,17 @@ PREFIXES = ["autoscout_de_market"]
 # away real listings (cheap, high-mileage E46s are a legitimate part of that
 # market), so it gets wider ones.
 DATASETS = {
+    # The default: whatever the configured targets collected. Its output is
+    # data.json, which is what index.html loads when no ?data= is given, so a
+    # plain `python main.py` ends with your own scrape on screen.
+    "belgium": {
+        "prefixes": ["autoscout24", "cardoen"],
+        "output": "data.json",
+        "bounds": dict(price_min=500, price_max=150_000, mileage_max=500_000),
+    },
     "de_market": {
         "prefixes": ["autoscout_de_market"],
-        "output": "data.json",
+        "output": "de_market.json",
         "bounds": dict(price_min=1000, price_max=100_000, mileage_max=400_000),
     },
     "bmw320touring": {
@@ -158,7 +166,13 @@ def build(prefixes=None, output_file=None,
     output_file = output_file or OUTPUT_FILE
     all_files = []
     for prefix in prefixes:
-        matches = sorted(glob(str(DATA_DIR / f"{prefix}_*.csv")))
+        # Match <prefix>_<timestamp>.csv and nothing else: a bare glob on
+        # "autoscout24_*" would also swallow "autoscout24_de_bmw320_touring_*",
+        # i.e. another dataset's files. Timestamps sort chronologically, so the
+        # last match is the newest.
+        pattern = re.compile(rf"^{re.escape(prefix)}_\d{{8}}_\d{{6}}\.csv$")
+        matches = sorted(f for f in glob(str(DATA_DIR / f"{prefix}_*.csv"))
+                         if pattern.match(Path(f).name))
         if matches:
             if LATEST_ONLY:
                 all_files.append(matches[-1])   # only the most recent per source
@@ -294,7 +308,7 @@ def build(prefixes=None, output_file=None,
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Build a dashboard JSON from scraped CSVs.")
-    ap.add_argument("--dataset", choices=sorted(DATASETS), default="de_market",
+    ap.add_argument("--dataset", choices=sorted(DATASETS), default="belgium",
                     help="which named dataset to build (default: de_market)")
     args = ap.parse_args()
 

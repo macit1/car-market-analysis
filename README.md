@@ -183,8 +183,14 @@ The builder reads matching CSVs by filename prefix from `car_scraper/data/raw/`,
 
 | `--dataset` | Source CSVs | Output |
 |---|---|---|
-| `de_market` *(default)* | `autoscout_de_market_*.csv` | `data.json` |
+| `belgium` *(default)* | `autoscout24_*.csv`, `cardoen_*.csv` | `data.json` |
+| `de_market` | `autoscout_de_market_*.csv` | `de_market.json` |
 | `bmw320touring` | `autoscout24_de_bmw320_touring_*.csv` | `bmw320_touring.json` |
+
+`belgium` is what the configured targets produce, and it writes `data.json` —
+the file `index.html` loads when no `?data=` is given. So a plain
+`python main.py` ends with your own scrape on screen; the other datasets are a
+query parameter away.
 
 Sanity bounds are per-dataset on purpose: a broad market scrape uses tight limits to strip junk rows, while a targeted single-model scrape needs wider ones, since cheap high-mileage cars are a real part of that market. To add a dataset, add an entry to `DATASETS` in `build_dashboard.py`.
 
@@ -197,7 +203,7 @@ The dashboard fetches its JSON, so it must be served over HTTP rather than opene
 ```bash
 python main.py serve
 # → http://localhost:8000
-# → http://localhost:8000/index.html?data=bmw320_touring.json
+# → http://localhost:8000/index.html?data=de_market.json
 ```
 
 ### Features
