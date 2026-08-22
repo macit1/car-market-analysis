@@ -30,6 +30,9 @@ data/
 
 # Dashboard — generated datasets (rebuild with: python main.py dashboard)
 dashboard/*.json
+
+# Local-only dashboard with its data baked in (kept on disk, never pushed)
+dashboard/opel_astra_dashboard.html
 dashboard/__pycache__/
 
 # Working notes (local only)

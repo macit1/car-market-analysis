@@ -8,41 +8,6 @@
       "strategy": "detail",
       "category": "suv-pick-up",
       "enabled": true
-    },
-    {
-      "make": "audi",
-      "model": "q2",
-      "country": "be",
-      "strategy": "detail",
-      "category": "suv-pick-up",
-      "limit": 150,
-      "output_basename": "audi_q2",
-      "enabled": false
-    },
-    {
-      "make": "bmw",
-      "model": "x1",
-      "country": "be",
-      "strategy": "detail",
-      "segment_by_year": true,
-      "year_from": 2015,
-      "year_to": 2010,
-      "max_pages": 20,
-      "output_basename": "autoscout_bmw_x1_bulk",
-      "enabled": false
-    },
-    {
-      "make": "bmw",
-      "model": "320",
-      "country": "de",
-      "strategy": "search",
-      "body": 5,
-      "variant": "touring",
-      "reject_title": "gran\\s*turismo|\\bGT\\b|langversion",
-      "limit": 100000,
-      "max_pages": 200,
-      "output_basename": "autoscout24_de_bmw320_touring",
-      "enabled": false
     }
   ]
 }

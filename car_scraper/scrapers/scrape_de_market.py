@@ -10,11 +10,9 @@ Result pages are read through the shared ``search`` helpers on AutoScoutScraper
 What stays local is the make discovery, the exclude list and the narrower
 seven-column output, which the dashboard reads by filename prefix.
 
-Filters, exclude list and output name live in ``config_de_market.json``.
-
-Run:
-    cd car_scraper
-    python -m scrapers.scrape_de_market
+The sweep's parameters are class defaults below rather than a config file: a
+sweep is one query shape, not a list of targets. Override them per run by
+passing keyword arguments, or add a ``"sweep"`` object to config.json.
 """
 
 import csv
@@ -31,26 +29,48 @@ COUNTRY_CODE = {"germany": "D", "belgium": "B"}
 
 
 class GermanMarketScraper(AutoScoutScraper):
-    def __init__(self, config_path: str = "config_de_market.json"):
+    """Sweep every make on one market except an exclude list."""
+
+    # Query shape. Same key names as a config.json target (year_from/year_to,
+    # max_pages, output_basename) so the two stay readable side by side.
+    DEFAULTS = {
+        "country": "germany",
+        "price_from": 8000,
+        "price_to": 24000,
+        "mileage_to": 150000,
+        "year_min": 2016,          # min first-registration year
+        # Volume brands whose stock swamps the sample without adding much to it.
+        "exclude_makes": ["Hyundai", "Peugeot", "Renault", "Kia", "Citroen",
+                          "Ford", "Fiat", "Mitsubishi", "Opel", "Volkswagen"],
+        "max_pages": 200,
+        "save_every": 500,
+        "segment_by_year": True,   # split makes that exceed the pagination cap
+        "year_from": 2026,
+        "year_to": 2016,
+        "output_basename": "autoscout_de_market",
+    }
+
+    def __init__(self, config_path: str = "config.json", **overrides):
         super().__init__(config_path=config_path, site_name="autoscout_de")
 
-        cfg = self.config
-        f_ = cfg.get("filters", {})
-        self.price_from = f_.get("price_from", 17000)
-        self.price_to = f_.get("price_to", 23000)
-        self.mileage_to = f_.get("mileage_to", 150000)
-        self.year_min = f_.get("year_min")  # min first-registration year, e.g. 2016
-        self.country = COUNTRY_CODE.get(cfg.get("country", "germany"), "D")
-        self.exclude = {m.strip().lower() for m in cfg.get("exclude_makes", [])}
-        self.max_pages = cfg.get("max_pages_per_make", 200)
-        self.save_every = cfg.get("save_every", 500)
+        # Precedence: explicit keyword > config.json's optional "sweep" object > default.
+        cfg = {**self.DEFAULTS, **self.config.get("sweep", {}), **overrides}
+
+        self.price_from = cfg["price_from"]
+        self.price_to = cfg["price_to"]
+        self.mileage_to = cfg["mileage_to"]
+        self.year_min = cfg["year_min"]
+        self.country = COUNTRY_CODE.get(cfg["country"], "D")
+        self.exclude = {m.strip().lower() for m in cfg["exclude_makes"]}
+        self.max_pages = cfg["max_pages"]
+        self.save_every = cfg["save_every"]
         self._last_saved = 0
-        self.segment_big = cfg.get("segment_big_makes_by_year", True)
-        self.year_from = cfg.get("year_segment_from", 2026)
-        self.year_to = cfg.get("year_segment_to", 2005)
+        self.segment_big = cfg["segment_by_year"]
+        self.year_from = cfg["year_from"]
+        self.year_to = cfg["year_to"]
 
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        base = cfg.get("output_basename", "autoscout_de_market")
+        base = cfg["output_basename"]
         self.csv_file = f"data/raw/{base}_{ts}.csv"
         self.json_file = f"data/raw/{base}_{ts}.json"
         self.rows = []  # list of dicts (our 7-column schema)
@@ -127,33 +147,8 @@ class GermanMarketScraper(AutoScoutScraper):
 
     # ---- Make discovery -----------------------------------------------------
 
-    def load_makes_from_file(self, path="makes_de.txt"):
-        """Return [(make_id, label), ...] from an editable list file (skips # lines)."""
-        if not os.path.exists(path):
-            return None
-        out = []
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                parts = line.split("\t") if "\t" in line else line.split(None, 1)
-                if len(parts) < 2:
-                    continue
-                try:
-                    out.append((int(parts[0]), parts[1].strip()))
-                except ValueError:
-                    continue
-        logger.info(f"Loaded {len(out)} makes from {path}.", extra={"site": self.site_name})
-        return out
-
     def fetch_all_makes(self):
-        """Use the editable makes_de.txt if present; otherwise pull the full
-        taxonomy and drop the configured exclude list."""
-        from_file = self.load_makes_from_file()
-        if from_file:
-            return from_file
-
+        """Pull the full make taxonomy and drop the excluded brands."""
         nd = self._next_data(self.get_page(f"{BASE}?{self._common_params()}&page=1"))
         if not nd:
             logger.error("Could not load taxonomy to discover makes.", extra={"site": self.site_name})

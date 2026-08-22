@@ -9,7 +9,7 @@ An end-to-end project that **scrapes**, **cleans**, and **visualises** used car 
 ## ⚡ Quick Start
 
 ```bash
-pip install -r car_scraper/requirements.txt
+pip install -r requirements.txt
 
 python main.py                      # scrape, then build the dashboard data
 python main.py scrape dashboard serve   # ...and serve it at localhost:8000
@@ -36,8 +36,7 @@ python main.py serve --port 9000
 
 The stages are deliberately independent — each one only reads what the previous
 one left on disk, so any of them runs on its own. Both components also stay
-runnable directly (`cd car_scraper && python scrape.py`,
-`python dashboard/build_dashboard.py`) if you'd rather bypass the orchestrator.
+`main.py` is the only entry point — the stages are modules, not scripts.
 
 ---
 
@@ -47,14 +46,12 @@ runnable directly (`cd car_scraper && python scrape.py`,
 car_market_analysis/
 │
 ├── main.py                      # Pipeline entry point — scrape / dashboard / serve
+├── requirements.txt             # Python dependencies (scraper + dashboard)
 │
 ├── car_scraper/                 # Scraping pipeline
 │   ├── scrape.py                # Scrape stage — runs the enabled site scrapers
 │   ├── config.json              # What to scrape (targets, limits, strategy)
-│   ├── config_de_market.json    # Config for the market-wide sweep
-│   ├── makes_de.txt             # Editable make-id list for that sweep
 │   ├── models.py                # Pydantic schema (CarListing)
-│   ├── requirements.txt
 │   │
 │   ├── scrapers/                # One class per site
 │   │   ├── base_scraper.py      # HTTP session, retry, validation, CSV export
@@ -87,7 +84,7 @@ car_market_analysis/
 python main.py scrape                 # every enabled target
 python main.py scrape --site cardoen  # just one site
 
-# market-wide sweep (all makes bar an exclude list) — its own entry point
+# market-wide sweep: every make on the market bar an exclude list
 cd car_scraper && python -m scrapers.scrape_de_market
 ```
 
@@ -129,7 +126,9 @@ Both read the page's own server-side JSON state rather than scraping HTML, so a 
 | `start_page` / `resume_file` | Resume an interrupted run, deduplicating against the existing CSV |
 | `enabled` | `false` keeps a target on file without running it |
 
-Optional top-level `"sites": ["autoscout", "cardoen"]` picks which scrapers the scrape stage runs. The market-wide sweep has its own config, `config_de_market.json`: price/mileage filters, an `exclude_makes` list, and year-segmentation bounds.
+Optional top-level `"sites": ["autoscout", "cardoen"]` picks which scrapers the scrape stage runs.
+
+The market-wide sweep is a query shape rather than a target list, so its parameters — price/mileage filters, the `exclude_makes` list, year-segmentation bounds — are class defaults on `GermanMarketScraper`. Override them with keyword arguments, or by adding an optional `"sweep"` object to `config.json`.
 
 ### Data schema
 

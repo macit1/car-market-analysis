@@ -1,14 +1,10 @@
 """The scrape stage: runs every site scraper enabled in config.json.
 
 Which makes/models get collected is config, not code — see the "targets" list
-there. Normally driven by the pipeline entry point in the project root
-(`python main.py scrape`), but runnable on its own:
-
-    python scrape.py                 # all enabled sites
-    python scrape.py --site cardoen  # just one
+there. This module is a stage, not an entry point: drive it from the project
+root with `python main.py scrape` (add `--site cardoen` for a single site).
 """
 
-import argparse
 import json
 import os
 
@@ -41,6 +37,8 @@ def resolve_sites(explicit=None):
 
 def run(sites=None):
     logger.info("Initializing car listings scraper pipeline...", extra={'site': 'SYSTEM'})
+    # utils.logger already creates logs/ on import; the scrapers need this one.
+    os.makedirs("data/raw", exist_ok=True)
 
     for key in sites or DEFAULT_SITES:
         scraper_cls = SCRAPERS.get(key)
@@ -56,17 +54,3 @@ def run(sites=None):
         except Exception as e:
             logger.error(f"Critical error executing {scraper.site_name}: {e}",
                          extra={'site': scraper.site_name})
-
-
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--site", action="append", choices=sorted(SCRAPERS),
-                    help="run only this site (repeatable); defaults to config.json's "
-                         "\"sites\", then to autoscout")
-    args = ap.parse_args()
-
-    # Ensure logs/raw directories exist just in case
-    os.makedirs("logs", exist_ok=True)
-    os.makedirs("data/raw", exist_ok=True)
-
-    run(resolve_sites(args.site))
