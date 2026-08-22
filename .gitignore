@@ -28,6 +28,9 @@ logs/
 # Data (optional - remove this line if you want to track scraped data)
 data/
 
-# Dashboard
-dashboard/data.json
+# Dashboard — generated datasets (rebuild with: python main.py dashboard)
+dashboard/*.json
 dashboard/__pycache__/
+
+# Working notes (local only)
+task.md

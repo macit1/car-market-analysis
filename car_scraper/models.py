@@ -16,6 +16,7 @@ class CarListing(BaseModel):
     posted_date: str
 
     # Optional fields
+    title: Optional[str] = None
     body_type: Optional[str] = None
     dealer_or_private: Optional[str] = None
     doors: Optional[int] = None

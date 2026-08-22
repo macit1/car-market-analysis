@@ -1,4 +1,5 @@
-pydantic
-fake-useragent
 requests
 beautifulsoup4
+fake-useragent
+pydantic
+pandas

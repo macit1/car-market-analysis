@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <title>Belgian Used SUV Market Dashboard</title>
+    <title>German Used Car Market Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js"></script>
     <style>
@@ -582,14 +582,185 @@
             font-size: 12px;
             letter-spacing: 0.3px;
         }
+
+        /* ── Treemap mode badge ── */
+        .chart-mode-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 8px;
+            vertical-align: middle;
+            transition: all 0.3s ease;
+        }
+        .chart-mode-badge.pie-mode {
+            background: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+        .chart-mode-badge.tree-mode {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.25);
+        }
+
+        /* ── Treemap canvas wrapper ── */
+        .chart-wrap canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            transition: opacity 0.25s ease;
+        }
+        /* When showing the brand/model treemap, give it the full row and more height */
+        .chart-card.treemap-expanded {
+            grid-column: 1 / -1;
+        }
+        .chart-card.treemap-expanded .chart-wrap {
+            height: 620px;
+        }
+        .chart-wrap canvas.fading {
+            opacity: 0;
+        }
+
+        /* ── Treemap tooltip ── */
+        #treemapTooltip {
+            position: fixed;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--text);
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            max-width: 200px;
+            line-height: 1.5;
+        }
+
+        /* ── Pagination Styling ── */
+        .tbl-pager {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--muted);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .pager-info {
+            font-weight: 500;
+        }
+
+        .pager-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pager-btn {
+            background: var(--panel2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            user-select: none;
+        }
+
+        .pager-btn:hover:not(:disabled) {
+            border-color: var(--muted);
+            background: var(--border);
+            transform: translateY(-1px);
+        }
+
+        .pager-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .pager-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pager-numbers {
+            display: flex;
+            gap: 4px;
+        }
+
+        .pager-num {
+            min-width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s ease;
+            user-select: none;
+            font-weight: 500;
+        }
+
+        .pager-num:hover:not(.active) {
+            background: var(--panel2);
+            border-color: var(--border);
+        }
+
+        .pager-num.active {
+            background: var(--text);
+            color: var(--bg);
+            font-weight: 600;
+        }
+
+        .pager-num.dots {
+            cursor: default;
+            border: none;
+        }
+
+        .pager-size {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pager-size select {
+            background: var(--panel2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+        .pager-size select:focus {
+            border-color: var(--accent);
+        }
     </style>
 </head>
 
 <body>
     <header class="app-header">
         <div>
-            <h1>SUV Market</h1>
-            <p class="sub" id="headerSub">Belgium Region Dataset · Loading…</p>
+            <h1>German Car Market</h1>
+            <p class="sub" id="headerSub">Germany · 8.000–24.000 € · Loading…</p>
         </div>
         <div class="header-meta" style="display: flex; align-items: center;">
             <button id="themeToggle" class="theme-btn" aria-label="Toggle Dark Mode" title="Toggle Theme">
@@ -611,6 +782,12 @@
                 </div>
                 <div class="ms-dropdown" id="modelDropdown"></div>
             </div>
+        </div>
+        <div class="filter">
+            <label>Make (Brand)</label>
+            <select id="fMake">
+                <option value="">All makes</option>
+            </select>
         </div>
         <div class="filter">
             <label>Source</label>
@@ -635,11 +812,17 @@
             </select>
         </div>
         <div class="filter">
+            <label>Region</label>
+            <select id="fRegion">
+                <option value="">All</option>
+            </select>
+        </div>
+        <div class="filter">
             <label>Year: <span id="yLbl"></span></label>
             <div class="dual">
                 <div class="track"></div>
                 <div class="fill" id="yFill"></div>
-                <input type="range" id="fYearMin" min="2005" max="2026" value="2005">
+                <input type="range" id="fYearMin" min="2005" max="2026" value="2017">
                 <input type="range" id="fYearMax" min="2005" max="2026" value="2026">
             </div>
         </div>
@@ -648,7 +831,7 @@
             <div class="dual">
                 <div class="track"></div>
                 <div class="fill" id="pFill"></div>
-                <input type="range" id="fPriceMin" min="2000" max="50000" step="1000" value="2000">
+                <input type="range" id="fPriceMin" min="2000" max="50000" step="1000" value="15000">
                 <input type="range" id="fPriceMax" min="2000" max="50000" step="1000" value="50000">
             </div>
         </div>
@@ -658,7 +841,7 @@
                 <div class="track"></div>
                 <div class="fill" id="mFill"></div>
                 <input type="range" id="fMileMin" min="0" max="300000" step="10000" value="0">
-                <input type="range" id="fMileMax" min="0" max="300000" step="10000" value="300000">
+                <input type="range" id="fMileMax" min="0" max="300000" step="10000" value="150000">
             </div>
         </div>
         <div class="filter" style="display:flex;align-items:flex-end">
@@ -675,10 +858,13 @@
             <h3>Average Price by Year (click bar to filter)</h3>
             <div class="chart-wrap"><canvas id="byYear"></canvas></div>
         </div>
-        <div class="chart-card">
-            <h3>Listings by Model (click slice to filter)</h3>
+        <div class="chart-card" id="modelChartCard">
+            <h3 id="modelChartTitle">Listings by Model
+                <span class="chart-mode-badge pie-mode" id="modelModeBadge">● PIE</span>
+            </h3>
             <div class="chart-wrap"><canvas id="byFuel"></canvas></div>
         </div>
+        <div id="treemapTooltip"></div>
         <div class="chart-card">
             <h3>Price Distribution (click bin to filter)</h3>
             <div class="chart-wrap"><canvas id="hist"></canvas></div>
@@ -686,7 +872,7 @@
     </div>
 
     <div class="table-card">
-        <h3>Listings (click headers to sort) · showing first 100</h3>
+        <h3>Listings (click headers to sort)</h3>
         <div class="tbl-wrap">
             <table id="tbl">
                 <thead>
@@ -697,12 +883,33 @@
                         <th data-k="mileage">km</th>
                         <th data-k="fuel">Fuel</th>
                         <th data-k="trans">Trans</th>
-                        <th data-k="source">Source</th>
+                        <th data-k="location">Location</th>
+                        <th data-k="region">Region</th>
                         <th>Link</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
+        </div>
+        <div class="tbl-pager" id="tblPager">
+            <div class="pager-info">
+                Showing <span id="pagerRange" class="highlight">0–0</span> of <span id="pagerTotal" class="highlight">0</span> listings
+            </div>
+            <div class="pager-controls">
+                <button class="pager-btn" id="pagerPrev" title="Previous Page">&laquo; Prev</button>
+                <div class="pager-numbers" id="pagerNumbers"></div>
+                <button class="pager-btn" id="pagerNext" title="Next Page">Next &raquo;</button>
+            </div>
+            <div class="pager-size">
+                Show
+                <select id="pagerSizeSelect">
+                    <option value="25">25</option>
+                    <option value="50" selected>50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                </select>
+                per page
+            </div>
         </div>
     </div>
 
@@ -722,13 +929,26 @@
         // jitter: small random offset to separate dots stacked on round numbers
         const jit = (v, amt) => v + (Math.random() - 0.5) * 2 * amt;
         let RAW = [];
+        // Slider bounds derived from whichever dataset is loaded (see initDashboard).
+        let SLIDER_DEFAULTS = { year: [2005, 2026], price: [0, 100000], mile: [0, 400000] };
         const fmt = n => n == null ? '-' : n.toLocaleString('fr-BE');
         const eur = n => '€' + fmt(Math.round(n));
 
         // fuel options populated after data loads (see initDashboard)
 
+        let currentPage = 1;
+        let pageSize = 50;
         let charts = {};
         let sortKey = 'price', sortAsc = true;
+
+        // ── Performance: kill animations (huge win with tens of thousands of points) ──
+        if (window.Chart) {
+            Chart.defaults.animation = false;
+            Chart.defaults.animations = false;
+            Chart.defaults.transitions.active.animation.duration = 0;
+        }
+        // Max points to actually draw in the scatter; above this we sample for responsiveness.
+        const SCATTER_MAX = 6000;
 
         // Theme Toggle Logic
         let isDark = localStorage.getItem('theme') === 'dark';
@@ -790,13 +1010,16 @@
         }
 
         function getFiltered() {
-            const s = fSource.value, f = fFuel.value, t = fTrans.value;
+            const s = fSource.value, f = fFuel.value, t = fTrans.value, mk = fMake.value;
+            const rg = fRegion.value;
             const yMin = +fYearMin.value, yMax = +fYearMax.value;
             const pMin = +fPriceMin.value, pMax = +fPriceMax.value;
             const mMin = +fMileMin.value, mMax = +fMileMax.value;
             return RAW.filter(r =>
                 (selectedModels.size === 0 || selectedModels.has(r.model)) &&
+                (!mk || (r.make || r.model.split(' ')[0]) === mk) &&
                 (!s || r.source === s) && (!f || r.fuel === f) && (!t || r.trans === t) &&
+                (!rg || r.region === rg) &&
                 r.year >= yMin && r.year <= yMax &&
                 r.price >= pMin && r.price <= pMax &&
                 r.mileage >= mMin && r.mileage <= mMax
@@ -806,15 +1029,19 @@
         function median(arr) { if (!arr.length) return 0; const s = [...arr].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2 }
         function mean(arr) { if (!arr.length) return 0; return arr.reduce((a, b) => a + b, 0) / arr.length }
 
+        // Spread-safe min/max (Math.min(...big) throws on ~65k+ element arrays)
+        const minOf = arr => arr.reduce((a, b) => b < a ? b : a, Infinity);
+        const maxOf = arr => arr.reduce((a, b) => b > a ? b : a, -Infinity);
+
         function renderKpis(d) {
             const prices = d.map(r => r.price), miles = d.map(r => r.mileage), years = d.map(r => r.year);
             const k = [
                 ['Listings', fmt(d.length)],
                 ['Avg Price', eur(mean(prices))],
                 ['Median km', fmt(Math.round(median(miles))) + ' km'],
-                ['Year Range', d.length ? Math.min(...years) + '–' + Math.max(...years) : '-'],
-                ['Cheapest', d.length ? eur(Math.min(...prices)) : '-'],
-                ['Most Expensive', d.length ? eur(Math.max(...prices)) : '-']
+                ['Year Range', d.length ? minOf(years) + '–' + maxOf(years) : '-'],
+                ['Cheapest', d.length ? eur(minOf(prices)) : '-'],
+                ['Most Expensive', d.length ? eur(maxOf(prices)) : '-']
             ];
             document.getElementById('kpis').innerHTML = k.map(x => `<div class="kpi"><div class="label">${x[0]}</div><div class="val">${x[1]}</div></div>`).join('');
         }
@@ -826,24 +1053,39 @@
             return `rgba(${r},${g},${b},.7)`;
         }
 
+        // Down-sample an array to at most `max` items (deterministic stride sampling).
+        function sample(arr, max) {
+            if (arr.length <= max) return arr;
+            const step = arr.length / max, out = [];
+            for (let i = 0; i < arr.length; i += step) out.push(arr[i | 0]);
+            return out;
+        }
+
         function renderScatter(d) {
             if (!d.length) { if (charts.s) charts.s.destroy(); return }
+            const total = d.length;
+            d = sample(d, SCATTER_MAX);                 // cap points for responsiveness
+            const sampled = d.length < total;
             const colorByModel = selectedModels.size !== 1;  // single model selected → color by year
             const ymin = Math.min(...d.map(r => r.year)), ymax = Math.max(...d.map(r => r.year));
-            const models = [...new Set(RAW.map(r => r.model))].filter(m => d.some(r => r.model === m));
+            const ptRadius = d.length > 3000 ? 2 : 3.5;
             const jx = 1500, jy = 250;
             let datasets;
             if (colorByModel) {
-                datasets = models.map(m => ({
+                // Group by model in a single pass (avoids O(models × rows) filtering)
+                const byModel = new Map();
+                for (const r of d) {
+                    let a = byModel.get(r.model);
+                    if (!a) { a = []; byModel.set(r.model, a); }
+                    a.push({ x: jit(r.mileage, jx), y: jit(r.price, jy), mileage: r.mileage, price: r.price, year: r.year, fuel: r.fuel, model: r.model });
+                }
+                datasets = [...byModel.entries()].map(([m, data]) => ({
                     label: m,
-                    data: d.filter(r => r.model === m).map(r => ({
-                        x: jit(r.mileage, jx), y: jit(r.price, jy),
-                        mileage: r.mileage, price: r.price, year: r.year, fuel: r.fuel, model: r.model
-                    })),
+                    data,
                     backgroundColor: modelColor(m) + '55',
                     borderColor: modelColor(m),
                     borderWidth: 1.2,
-                    pointRadius: 3.5,
+                    pointRadius: ptRadius,
                     pointHoverRadius: 7,
                     pointHoverBackgroundColor: modelColor(m),
                     pointHoverBorderColor: '#fff',
@@ -861,7 +1103,7 @@
                     backgroundColor: data.map(p => p.bg.replace(/[\d.]+\)$/, '0.35)')),
                     borderColor: data.map(p => p.bg.replace(/[\d.]+\)$/, '1)')),
                     borderWidth: 1.2,
-                    pointRadius: 3.5,
+                    pointRadius: ptRadius,
                     pointHoverRadius: 7,
                     pointHoverBorderColor: '#fff',
                     pointHoverBorderWidth: 2
@@ -873,8 +1115,10 @@
                 type: 'scatter',
                 data: { datasets },
                 options: {
+                    animation: false,
                     plugins: {
                         legend: { display: colorByModel, position: 'top', onClick: null, labels: { color: cc.text, font: { size: 11 }, boxWidth: 12 } },
+                        subtitle: { display: sampled, text: `Showing a ${fmt(d.length)}-point sample of ${fmt(total)} listings (filter to see all)`, color: cc.muted, font: { size: 11 } },
                         tooltip: { callbacks: { label: c => `${c.raw.model} ${c.raw.year} · ${eur(c.raw.price)} · ${fmt(c.raw.mileage)}km · ${c.raw.fuel}` } }
                     },
                     scales: {
@@ -933,43 +1177,309 @@
             }
         }
 
+        // ── Brand color palette (distinct from model palette) ──────────────
+        const BRAND_PALETTE = [
+            '#38bdf8','#a78bfa','#34d399','#fb923c','#f472b6',
+            '#facc15','#4ade80','#f87171','#2dd4bf','#e879f9',
+            '#60a5fa','#fbbf24','#818cf8','#a3e635'
+        ];
+        let BRAND_COLORS = {};
+        function buildBrandColors(brands) {
+            BRAND_COLORS = {};
+            [...brands].sort().forEach((b, i) => { BRAND_COLORS[b] = BRAND_PALETTE[i % BRAND_PALETTE.length]; });
+        }
+        const brandColor = b => BRAND_COLORS[b] || '#94a3b8';
+
+        // ── Squarified treemap layout (Bruls et al.) ─────────────────────
+        function squarify(items, x, y, w, h) {
+            // items: [{value, ...meta}], returns [{x,y,w,h,...meta}]
+            if (!items.length) return [];
+            const total = items.reduce((s, i) => s + i.value, 0);
+            if (total === 0) return [];
+            const area = w * h;
+            const result = [];
+            let remaining = [...items];
+            let rx = x, ry = y, rw = w, rh = h;
+            while (remaining.length) {
+                const isWide = rw >= rh;
+                const shortEdge = isWide ? rh : rw;
+                let row = [], rowArea = 0, best = Infinity;
+                for (let i = 0; i < remaining.length; i++) {
+                    const trial = [...row, remaining[i]];
+                    const trialArea = trial.reduce((s, t) => s + t.value, 0) * (area / total);
+                    const ratio = computeRatio(trial.map(t => t.value * (area / total)), shortEdge);
+                    if (ratio <= best) { best = ratio; row = trial; rowArea = trialArea; }
+                    else break;
+                }
+                remaining = remaining.slice(row.length);
+                const rowWeight = rowArea / (isWide ? rh : rw);
+                let cursor = isWide ? ry : rx;
+                for (const item of row) {
+                    const itemArea = item.value * (area / total);
+                    const span = itemArea / rowWeight;
+                    if (isWide) result.push({ ...item, x: rx, y: cursor, w: rowWeight, h: span });
+                    else result.push({ ...item, x: cursor, y: ry, w: span, h: rowWeight });
+                    cursor += span;
+                }
+                if (isWide) { rx += rowWeight; rw -= rowWeight; }
+                else { ry += rowWeight; rh -= rowWeight; }
+            }
+            return result;
+        }
+        function computeRatio(areas, edge) {
+            if (!areas.length) return Infinity;
+            const s = areas.reduce((a, b) => a + b, 0);
+            const max = Math.max(...areas), min = Math.min(...areas);
+            return Math.max((edge * edge * max) / (s * s), (s * s) / (edge * edge * min));
+        }
+
+        // ── Treemap renderer ─────────────────────────────────────────────
+        const TREEMAP_THRESHOLD = 7;
+        let treemapRects = [];  // for hit-testing
+        let treemapCanvas = null;
+
         function renderByModel(d) {
             const order = [...new Set(RAW.map(r => r.model))];
             const g = {}; d.forEach(r => g[r.model] = (g[r.model] || 0) + 1);
             const labels = order.filter(m => g[m]);
-            const vals = labels.map(m => g[m]);
-            const colors = labels.map(modelColor);
-            const cc = getChartColors();
-            if (charts.f) charts.f.destroy();
-            charts.f = new Chart(document.getElementById('byFuel'), {
-                type: 'doughnut',
-                data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderColor: cc.border, borderWidth: 2, hoverOffset: 8 }] },
-                options: {
-                    onClick: (evt, els) => {
-                        if (!els.length) return;
-                        const clicked = labels[els[0].index];
-                        if (selectedModels.has(clicked)) selectedModels.delete(clicked);
-                        else selectedModels.add(clicked);
-                        // sync checkboxes
-                        document.querySelectorAll('#modelDropdown .ms-item input').forEach(cb => {
-                            cb.checked = selectedModels.has(cb.value);
-                        });
-                        updateModelTrigger();
-                        refresh();
-                    },
-                    onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default' },
-                    plugins: {
-                        legend: { position: 'right', labels: { color: cc.text, font: { size: 12 } } },
-                        tooltip: { callbacks: { label: c => `${c.label}: ${c.raw} listings (click to filter)` } }
-                    }
+
+            // Count distinct active models in the filtered data
+            const activeModelCount = labels.length;
+            const useTreemap = activeModelCount > TREEMAP_THRESHOLD;
+
+            // Update badge & title
+            const badge = document.getElementById('modelModeBadge');
+            const title = document.getElementById('modelChartTitle');
+            if (useTreemap) {
+                badge.textContent = '⬛ TREEMAP';
+                badge.className = 'chart-mode-badge tree-mode';
+                title.firstChild.textContent = 'Listings by Brand & Model ';
+            } else {
+                badge.textContent = '● PIE';
+                badge.className = 'chart-mode-badge pie-mode';
+                title.firstChild.textContent = 'Listings by Model ';
+            }
+
+            const canvas = document.getElementById('byFuel');
+
+            // Treemap needs much more room than the pie — expand the card to full width
+            document.getElementById('modelChartCard').classList.toggle('treemap-expanded', useTreemap);
+
+            if (!useTreemap) {
+                // ── PIE / DOUGHNUT MODE ──────────────────────────────────
+                // Remove treemap listeners if any
+                if (treemapCanvas) {
+                    treemapCanvas.onmousemove = null;
+                    treemapCanvas.onclick = null;
+                    treemapCanvas.onmouseleave = null;
+                    treemapCanvas = null;
                 }
-            });
+                document.getElementById('treemapTooltip').style.display = 'none';
+
+                const vals = labels.map(m => g[m]);
+                const colors = labels.map(modelColor);
+                const cc = getChartColors();
+                if (charts.f) charts.f.destroy();
+                charts.f = new Chart(canvas, {
+                    type: 'doughnut',
+                    data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderColor: cc.border, borderWidth: 2, hoverOffset: 8 }] },
+                    options: {
+                        onClick: (evt, els) => {
+                            if (!els.length) return;
+                            const clicked = labels[els[0].index];
+                            if (selectedModels.has(clicked)) selectedModels.delete(clicked);
+                            else selectedModels.add(clicked);
+                            document.querySelectorAll('#modelDropdown .ms-item input').forEach(cb => {
+                                cb.checked = selectedModels.has(cb.value);
+                            });
+                            updateModelTrigger();
+                            refresh();
+                        },
+                        onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default' },
+                        plugins: {
+                            legend: { position: 'right', labels: { color: cc.text, font: { size: 12 } } },
+                            tooltip: { callbacks: { label: c => `${c.label}: ${c.raw} listings (click to filter)` } }
+                        }
+                    }
+                });
+            } else {
+                // ── TREEMAP MODE ─────────────────────────────────────────
+                // Destroy existing Chart.js instance
+                if (charts.f) { charts.f.destroy(); charts.f = null; }
+                canvas.removeAttribute('style'); // Clear inline styles left by Chart.js
+
+                // Build brand → models hierarchy
+                const brandMap = {};
+                d.forEach(r => {
+                    const brand = r.make || r.model.split(' ')[0];
+                    if (!brandMap[brand]) brandMap[brand] = {};
+                    brandMap[brand][r.model] = (brandMap[brand][r.model] || 0) + 1;
+                });
+                buildBrandColors(Object.keys(brandMap));
+
+                // Fade transition
+                canvas.classList.add('fading');
+                setTimeout(() => {
+                    drawTreemap(canvas, brandMap, g);
+                    canvas.classList.remove('fading');
+                }, 200);
+            }
+        }
+
+        function drawTreemap(canvas, brandMap, modelCounts) {
+            // Set canvas resolution to match its CSS display size
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            const W = rect.width, H = rect.height;
+            const PAD = 2;  // gap between rectangles
+
+            // Flatten to brand-level items for top-level layout
+            const brandItems = Object.entries(brandMap).map(([brand, models]) => ({
+                brand,
+                value: Object.values(models).reduce((s, v) => s + v, 0),
+                models
+            })).sort((a, b) => b.value - a.value);
+
+            const brandRects = squarify(brandItems, 0, 0, W, H);
+            treemapRects = [];  // reset hit list
+
+            const cc = getChartColors();
+            ctx.clearRect(0, 0, W, H);
+
+            for (const br of brandRects) {
+                const bColor = brandColor(br.brand);
+                const bx = br.x + PAD, by = br.y + PAD, bw = br.w - PAD * 2, bh = br.h - PAD * 2;
+                if (bw <= 0 || bh <= 0) continue;
+
+                // Brand background (slightly dimmed)
+                ctx.fillStyle = bColor + '22';
+                ctx.beginPath();
+                roundRect(ctx, bx, by, bw, bh, 6);
+                ctx.fill();
+
+                // Brand border
+                ctx.strokeStyle = bColor + '66';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Sub-layout: models within this brand
+                const modelItems = Object.entries(br.models).map(([model, count]) => ({ model, brand: br.brand, value: count }))
+                    .sort((a, b) => b.value - a.value);
+
+                const HEADER = bh > 28 ? 20 : 0;  // brand label area
+                const modelRects = squarify(modelItems, bx + PAD, by + HEADER + PAD, bw - PAD * 2, bh - HEADER - PAD * 2);
+
+                for (const mr of modelRects) {
+                    const mx = mr.x + PAD / 2, my = mr.y + PAD / 2, mw = mr.w - PAD, mh = mr.h - PAD;
+                    if (mw <= 2 || mh <= 2) continue;
+
+                    // Model rectangle fill
+                    ctx.fillStyle = bColor + 'cc';
+                    ctx.beginPath();
+                    roundRect(ctx, mx, my, mw, mh, 4);
+                    ctx.fill();
+
+                    // Selection highlight
+                    if (selectedModels.has(mr.model)) {
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2.5;
+                        ctx.stroke();
+                    }
+
+                    // Model label
+                    if (mw > 40 && mh > 18) {
+                        ctx.save();
+                        ctx.beginPath();
+                        roundRect(ctx, mx, my, mw, mh, 4);
+                        ctx.clip();
+                        ctx.fillStyle = '#ffffff';
+                        ctx.textBaseline = 'middle';
+                        const modelFontSize = Math.min(12, Math.max(8, mh * 0.28));
+                        ctx.font = `600 ${modelFontSize}px Inter, sans-serif`;
+                        ctx.fillText(mr.model, mx + 6, my + mh * 0.42, mw - 12);
+                        if (mh > 32) {
+                            ctx.fillStyle = 'rgba(255,255,255,0.75)';
+                            ctx.font = `400 ${Math.max(8, modelFontSize - 2)}px Inter, sans-serif`;
+                            ctx.fillText(`${mr.value} listings`, mx + 6, my + mh * 0.65, mw - 12);
+                        }
+                        ctx.restore();
+                    }
+
+                    // Store rect for hit-testing
+                    treemapRects.push({ x: mx, y: my, w: mw, h: mh, model: mr.model, brand: mr.brand, count: mr.value });
+                }
+
+                // Brand label (on top of children)
+                if (HEADER > 0 && bw > 30) {
+                    ctx.fillStyle = bColor;
+                    ctx.font = `700 11px Inter, sans-serif`;
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(br.brand.toUpperCase(), bx + 8, by + HEADER / 2, bw - 16);
+                }
+            }
+
+            // Attach mouse events
+            treemapCanvas = canvas;
+            const tooltip = document.getElementById('treemapTooltip');
+
+            canvas.onmousemove = function(e) {
+                const cr = canvas.getBoundingClientRect();
+                const mx = e.clientX - cr.left, my = e.clientY - cr.top;
+                const hit = treemapRects.find(r => mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h);
+                if (hit) {
+                    canvas.style.cursor = 'pointer';
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (e.clientX + 14) + 'px';
+                    tooltip.style.top = (e.clientY - 10) + 'px';
+                    const sel = selectedModels.has(hit.model) ? ' ✓' : '';
+                    tooltip.innerHTML = `<strong>${hit.brand} ${hit.model}</strong>${sel}<br>${hit.count} listings<br><span style="opacity:.6;font-size:10px">click to filter</span>`;
+                } else {
+                    canvas.style.cursor = 'default';
+                    tooltip.style.display = 'none';
+                }
+            };
+            canvas.onmouseleave = function() {
+                tooltip.style.display = 'none';
+                canvas.style.cursor = 'default';
+            };
+            canvas.onclick = function(e) {
+                const cr = canvas.getBoundingClientRect();
+                const mx = e.clientX - cr.left, my = e.clientY - cr.top;
+                const hit = treemapRects.find(r => mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h);
+                if (!hit) return;
+                if (selectedModels.has(hit.model)) selectedModels.delete(hit.model);
+                else selectedModels.add(hit.model);
+                document.querySelectorAll('#modelDropdown .ms-item input').forEach(cb => {
+                    cb.checked = selectedModels.has(cb.value);
+                });
+                updateModelTrigger();
+                refresh();
+            };
+        }
+
+        // ── Rounded rectangle helper ─────────────────────────────────────
+        function roundRect(ctx, x, y, w, h, r) {
+            r = Math.min(r, w / 2, h / 2);
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
         }
 
         function renderHist(d) {
             const bins = 10, prices = d.map(r => r.price);
             if (!prices.length) { if (charts.h) charts.h.destroy(); return }
-            const min = Math.min(...prices), max = Math.max(...prices), w = (max - min) / bins || 1;
+            const min = minOf(prices), max = maxOf(prices), w = (max - min) / bins || 1;
             const labels = [];
             for (let i = 0; i < bins; i++)labels.push(eur(min + i * w));
             const models = [...new Set(RAW.map(r => r.model))].filter(m => d.some(r => r.model === m));
@@ -1003,10 +1513,71 @@
             });
         }
 
+        function updatePaginationControls(totalItems) {
+            const totalPages = Math.ceil(totalItems / pageSize) || 1;
+            
+            // Boundary enforcement
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const prevBtn = document.getElementById('pagerPrev');
+            const nextBtn = document.getElementById('pagerNext');
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+
+            // Info text
+            const start = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+            const end = Math.min(currentPage * pageSize, totalItems);
+            document.getElementById('pagerRange').textContent = `${fmt(start)}–${fmt(end)}`;
+            document.getElementById('pagerTotal').textContent = fmt(totalItems);
+
+            // Numbers
+            const numbersEl = document.getElementById('pagerNumbers');
+            numbersEl.innerHTML = '';
+
+            const range = 2; // number of pages to show before and after current
+            const pages = [];
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - range && i <= currentPage + range)) {
+                    pages.push(i);
+                } else if (pages[pages.length - 1] !== '...') {
+                    pages.push('...');
+                }
+            }
+
+            pages.forEach(p => {
+                const btn = document.createElement('div');
+                if (p === '...') {
+                    btn.className = 'pager-num dots';
+                    btn.textContent = '...';
+                } else {
+                    btn.className = 'pager-num' + (p === currentPage ? ' active' : '');
+                    btn.textContent = p;
+                    btn.addEventListener('click', () => {
+                        currentPage = p;
+                        renderTable(getFiltered());
+                    });
+                }
+                numbersEl.appendChild(btn);
+            });
+        }
+
         function renderTable(d) {
             const sorted = [...d].sort((a, b) => { const x = a[sortKey], y = b[sortKey]; if (x === y) return 0; return (x < y ? -1 : 1) * (sortAsc ? 1 : -1) });
+            
+            const totalItems = sorted.length;
+            const totalPages = Math.ceil(totalItems / pageSize) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIdx = (currentPage - 1) * pageSize;
+            const pageData = sorted.slice(startIdx, startIdx + pageSize);
+
             const tb = document.querySelector('#tbl tbody');
-            tb.innerHTML = sorted.slice(0, 100).map(r => `<tr><td>${r.model}</td><td>${r.year}</td><td>${eur(r.price)}</td><td>${fmt(r.mileage)}</td><td>${r.fuel}</td><td>${r.trans}</td><td>${r.source}</td><td><a href="${r.url}" target="_blank">view ↗</a></td></tr>`).join('');
+            tb.innerHTML = pageData.map(r => `<tr><td>${r.model}</td><td>${r.year}</td><td>${eur(r.price)}</td><td>${fmt(r.mileage)}</td><td>${r.fuel}</td><td>${r.trans}</td><td>${r.location || '—'}</td><td>${r.region || '—'}</td><td><a href="${r.url}" target="_blank">view ↗</a></td></tr>`).join('');
+
+            updatePaginationControls(totalItems);
         }
 
         function updateFill(fillEl, minEl, maxEl) {
@@ -1040,6 +1611,7 @@
         }
 
         function refresh() {
+            currentPage = 1; // Reset to page 1 on filter changes
             // ensure min<=max
             if (+fYearMin.value > +fYearMax.value) fYearMin.value = fYearMax.value;
             if (+fPriceMin.value > +fPriceMax.value) fPriceMin.value = fPriceMax.value;
@@ -1059,14 +1631,15 @@
             selectedModels.clear();
             document.querySelectorAll('#modelDropdown .ms-item input').forEach(cb => cb.checked = false);
             updateModelTrigger();
-            fSource.value = ''; fFuel.value = ''; fTrans.value = '';
-            fYearMin.value = fYearMin.min; fYearMax.value = fYearMax.max;
-            fPriceMin.value = fPriceMin.min; fPriceMax.value = fPriceMax.max;
-            fMileMin.value = 0; fMileMax.value = 300000;
+            fMake.value = ''; fSource.value = ''; fFuel.value = ''; fTrans.value = ''; fRegion.value = '';
+            // Reset to the dataset's full span, not to fixed numbers.
+            fYearMin.value  = SLIDER_DEFAULTS.year[0];  fYearMax.value  = SLIDER_DEFAULTS.year[1];
+            fPriceMin.value = SLIDER_DEFAULTS.price[0]; fPriceMax.value = SLIDER_DEFAULTS.price[1];
+            fMileMin.value  = SLIDER_DEFAULTS.mile[0];  fMileMax.value  = SLIDER_DEFAULTS.mile[1];
             refresh();
         }
 
-        ['fSource', 'fFuel', 'fTrans', 'fYearMin', 'fYearMax', 'fPriceMin', 'fPriceMax', 'fMileMin', 'fMileMax'].forEach(id => {
+        ['fMake', 'fSource', 'fFuel', 'fTrans', 'fRegion', 'fYearMin', 'fYearMax', 'fPriceMin', 'fPriceMax', 'fMileMin', 'fMileMax'].forEach(id => {
             document.getElementById(id).addEventListener('input', refresh);
         });
 
@@ -1088,13 +1661,61 @@
             th.addEventListener('click', () => { const k = th.dataset.k; if (sortKey === k) sortAsc = !sortAsc; else { sortKey = k; sortAsc = true } renderTable(getFiltered()) });
         });
 
+        // Redraw active treemap on window resize for responsiveness
+        window.addEventListener('resize', () => {
+            if (treemapCanvas) {
+                const d = getFiltered();
+                const activeModelCount = [...new Set(RAW.map(r => r.model))].filter(m => d.some(r => r.model === m)).length;
+                if (activeModelCount > TREEMAP_THRESHOLD) {
+                    const brandMap = {};
+                    d.forEach(r => {
+                        const brand = r.make || r.model.split(' ')[0];
+                        if (!brandMap[brand]) brandMap[brand] = {};
+                        brandMap[brand][r.model] = (brandMap[brand][r.model] || 0) + 1;
+                    });
+                    const g = {}; d.forEach(r => g[r.model] = (g[r.model] || 0) + 1);
+                    drawTreemap(treemapCanvas, brandMap, g);
+                }
+            }
+        });
+
+        // Pagination controls event listeners
+        document.getElementById('pagerPrev').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable(getFiltered());
+            }
+        });
+
+        document.getElementById('pagerNext').addEventListener('click', () => {
+            const totalItems = getFiltered().length;
+            const totalPages = Math.ceil(totalItems / pageSize) || 1;
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable(getFiltered());
+            }
+        });
+
+        document.getElementById('pagerSizeSelect').addEventListener('change', (e) => {
+            pageSize = +e.target.value;
+            currentPage = 1;
+            renderTable(getFiltered());
+        });
+
         async function initDashboard() {
+            // Which dataset to show: ?data=<file>.json, defaulting to data.json.
+            // Restricted to a plain local filename so the param can't point the
+            // page at an arbitrary URL.
+            const requested = new URLSearchParams(location.search).get('data');
+            const DATA_FILE = (requested && /^[\w.-]+\.json$/.test(requested)) ? requested : 'data.json';
+
             try {
-                const resp = await fetch('data.json');
+                const resp = await fetch(DATA_FILE);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 RAW = await resp.json();
             } catch (e) {
-                console.error('Failed to load data.json:', e);
-                document.body.innerHTML = '<h1 style="color:#f87171;padding:40px">⚠ Could not load data.json<br><small style="font-weight:normal">Run via: python -m http.server 8000</small></h1>';
+                console.error(`Failed to load ${DATA_FILE}:`, e);
+                document.body.innerHTML = `<h1 style="color:#f87171;padding:40px">⚠ Could not load ${DATA_FILE}<br><small style="font-weight:normal">Run via: python -m http.server 8000</small></h1>`;
                 return;
             }
 
@@ -1174,19 +1795,52 @@
             const fSel = document.getElementById('fFuel');
             fuels.forEach(f => { const o = document.createElement('option'); o.value = f; o.textContent = f; fSel.appendChild(o) });
 
-            // Update header subtitle with discovered models
-            const makes = [...new Set(RAW.map(r => r.make || r.model.split(' ')[0]))].sort();
-            document.getElementById('headerSub').textContent =
-                `Belgium Region Dataset · ${allModels.length} models · ${[...new Set(RAW.map(r=>r.source))].join(', ')}`;
+            // Populate region dropdown (NRW first — it's the one people filter on).
+            // Datasets without a region field just get "All".
+            const regions = [...new Set(RAW.map(r => r.region).filter(Boolean))]
+                .sort((a, b) => (a === 'NRW' ? -1 : b === 'NRW' ? 1 : a.localeCompare(b)));
+            const rgSel = document.getElementById('fRegion');
+            regions.forEach(rg => {
+                const n = RAW.filter(r => r.region === rg).length;
+                const o = document.createElement('option');
+                o.value = rg; o.textContent = `${rg} (${n})`;
+                rgSel.appendChild(o);
+            });
 
-            // Adjust price slider range to actual data
+            // Populate make (brand) dropdown dynamically
+            const makes = [...new Set(RAW.map(r => r.make || r.model.split(' ')[0]))].sort();
+            const mkSel = document.getElementById('fMake');
+            makes.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = m; mkSel.appendChild(o) });
+
+            // Update header subtitle with discovered models
+            document.getElementById('headerSub').textContent =
+                `Germany · ${allModels.length} models · ${[...new Set(RAW.map(r=>r.source))].join(', ')}`;
+
+            // Fit every range slider to the dataset actually loaded, and open
+            // them to their full span. Hard-coded bounds (year 2017+, price
+            // 15k+, mileage ≤150k) were tuned for one dataset and silently hid
+            // large parts of any other one.
             const prices = RAW.map(r => r.price);
-            const pMin = Math.floor(Math.min(...prices) / 1000) * 1000;
-            const pMax = Math.ceil(Math.max(...prices) / 1000) * 1000;
-            const priceMinEl = document.getElementById('fPriceMin');
-            const priceMaxEl = document.getElementById('fPriceMax');
-            priceMinEl.min = pMin; priceMinEl.max = pMax; priceMinEl.value = pMin;
-            priceMaxEl.min = pMin; priceMaxEl.max = pMax; priceMaxEl.value = pMax;
+            const years = RAW.map(r => r.year);
+            const miles = RAW.map(r => r.mileage);
+
+            const round = (v, step, up) =>
+                (up ? Math.ceil(v / step) : Math.floor(v / step)) * step;
+
+            SLIDER_DEFAULTS = {
+                year:  [minOf(years), maxOf(years)],
+                price: [round(minOf(prices), 1000, false), round(maxOf(prices), 1000, true)],
+                mile:  [0, round(maxOf(miles), 10000, true)]
+            };
+
+            const applyRange = (minId, maxId, [lo, hi]) => {
+                const a = document.getElementById(minId), b = document.getElementById(maxId);
+                a.min = b.min = lo; a.max = b.max = hi;
+                a.value = lo; b.value = hi;
+            };
+            applyRange('fYearMin',  'fYearMax',  SLIDER_DEFAULTS.year);
+            applyRange('fPriceMin', 'fPriceMax', SLIDER_DEFAULTS.price);
+            applyRange('fMileMin',  'fMileMax',  SLIDER_DEFAULTS.mile);
 
             refresh();
         }

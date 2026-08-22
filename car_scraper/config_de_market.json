@@ -1,0 +1,16 @@
+{
+  "country": "germany",
+  "filters": {
+    "price_from": 8000,
+    "price_to": 24000,
+    "mileage_to": 150000,
+    "year_min": 2016
+  },
+  "exclude_makes": ["Hyundai", "Peugeot", "Renault", "Kia", "Citroen", "Ford"],
+  "max_pages_per_make": 200,
+  "save_every": 500,
+  "segment_big_makes_by_year": true,
+  "year_segment_from": 2026,
+  "year_segment_to": 2016,
+  "output_basename": "autoscout_de_market"
+}

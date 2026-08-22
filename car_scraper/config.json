@@ -1,61 +1,48 @@
 {
+  "extraction_limit_per_target": 300,
   "targets": [
     {
-      "make": "bmw",
-      "model": "x1"
-    },
-    {
-      "make": "bmw",
-      "model": "x2"
-    },
-    {
-      "make": "kia",
-      "model": "stonic"
-    },
-    {
-      "make": "citroen",
-      "model": "c4"
+      "make": "opel",
+      "model": "astra",
+      "country": "be",
+      "strategy": "detail",
+      "category": "suv-pick-up",
+      "enabled": true
     },
     {
       "make": "audi",
-      "model": "q3"
+      "model": "q2",
+      "country": "be",
+      "strategy": "detail",
+      "category": "suv-pick-up",
+      "limit": 150,
+      "output_basename": "audi_q2",
+      "enabled": false
     },
     {
-      "make": "volkswagen",
-      "model": "tiguan"
+      "make": "bmw",
+      "model": "x1",
+      "country": "be",
+      "strategy": "detail",
+      "segment_by_year": true,
+      "year_from": 2015,
+      "year_to": 2010,
+      "max_pages": 20,
+      "output_basename": "autoscout_bmw_x1_bulk",
+      "enabled": false
     },
     {
-      "make": "volkswagen",
-      "model": "t-roc"
-    },
-    {
-      "make": "volkswagen",
-      "model": "taigo"
-    },
-    {
-      "make": "volkswagen",
-      "model": "t-cross"
-    },
-    {
-      "make": "hyundai",
-      "model": "kona"
-    },
-    {
-      "make": "peugeot",
-      "model": "3008"
-    },
-    {
-      "make": "peugeot",
-      "model": "2008"
-    },
-    {
-      "make": "toyota",
-      "model": "c-hr"
-    },
-    {
-      "make": "skoda",
-      "model": "karoq"
+      "make": "bmw",
+      "model": "320",
+      "country": "de",
+      "strategy": "search",
+      "body": 5,
+      "variant": "touring",
+      "reject_title": "gran\\s*turismo|\\bGT\\b|langversion",
+      "limit": 100000,
+      "max_pages": 200,
+      "output_basename": "autoscout24_de_bmw320_touring",
+      "enabled": false
     }
-  ],
-  "extraction_limit_per_target": 200
+  ]
 }

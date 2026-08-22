@@ -13,29 +13,41 @@ from pydantic import ValidationError
 import json
 
 class BaseScraper:
-    def __init__(self, site_name: str, base_url: str):
+    def __init__(self, site_name: str, base_url: str, config_path: str = "config.json"):
         self.site_name = site_name
         self.base_url = base_url
+        self.config_path = config_path
         self.session = None
         self.request_count = 0
         self.listings = []
         self.seen_urls = set()  # Deduplication barrier
         self.ua = UserAgent()
-        
+
         # Load configuration
+        self.config = {}
         self.targets = []
         self.target_limit = 100
-        
+
         try:
-            with open("config.json", "r") as f:
-                config = json.load(f)
-                self.targets = config.get("targets", [])
-                self.target_limit = config.get("extraction_limit_per_target", 100)
+            with open(config_path, "r", encoding="utf-8") as f:
+                self.config = json.load(f)
+                self.targets = self.config.get("targets", [])
+                self.target_limit = self.config.get("extraction_limit_per_target", 100)
         except Exception as e:
-            logger.warning(f"Failed to load config.json: {e}", extra={'site': self.site_name})
-            
+            logger.warning(f"Failed to load {config_path}: {e}", extra={'site': self.site_name})
+
+        self.set_export_file(self.site_name)
+
+    def set_export_file(self, basename: str):
+        """Point subsequent save_data() calls at a fresh timestamped CSV.
+
+        Scrapers that split a run into several outputs (one per configured
+        target) call this between targets; the dedup barrier is deliberately
+        left intact so the same listing is never written twice in one run.
+        """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.current_export_file = f"data/raw/{self.site_name}_{timestamp}.csv"
+        self.current_export_file = f"data/raw/{basename}_{timestamp}.csv"
+        return self.current_export_file
 
     def start_session(self):
         logger.info(f"Scraper session started.", extra={'site': self.site_name})
