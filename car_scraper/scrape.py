@@ -1,13 +1,15 @@
-"""Pipeline entry point.
+"""The scrape stage: runs every site scraper enabled in config.json.
 
-Runs every scraper enabled in config.json. Which makes/models get collected is
-config, not code — see the "targets" list there.
+Which makes/models get collected is config, not code — see the "targets" list
+there. Normally driven by the pipeline entry point in the project root
+(`python main.py scrape`), but runnable on its own:
 
-    python main.py                 # all enabled sites
-    python main.py --site cardoen  # just one
+    python scrape.py                 # all enabled sites
+    python scrape.py --site cardoen  # just one
 """
 
 import argparse
+import json
 import os
 
 from scrapers.autoscout_scraper import AutoScoutScraper
@@ -26,7 +28,18 @@ SCRAPERS = {
 DEFAULT_SITES = ["autoscout"]
 
 
-def main(sites=None):
+def resolve_sites(explicit=None):
+    """Sites to run: what was asked for, else config.json's "sites", else the default."""
+    if explicit:
+        return explicit
+    try:
+        with open("config.json", encoding="utf-8") as f:
+            return json.load(f).get("sites") or DEFAULT_SITES
+    except Exception:
+        return DEFAULT_SITES
+
+
+def run(sites=None):
     logger.info("Initializing car listings scraper pipeline...", extra={'site': 'SYSTEM'})
 
     for key in sites or DEFAULT_SITES:
@@ -56,13 +69,4 @@ if __name__ == "__main__":
     os.makedirs("logs", exist_ok=True)
     os.makedirs("data/raw", exist_ok=True)
 
-    sites = args.site
-    if not sites:
-        try:
-            import json
-            with open("config.json", encoding="utf-8") as f:
-                sites = json.load(f).get("sites")
-        except Exception:
-            sites = None
-
-    main(sites)
+    run(resolve_sites(args.site))

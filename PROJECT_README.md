@@ -36,7 +36,7 @@ python main.py serve --port 9000
 
 The stages are deliberately independent — each one only reads what the previous
 one left on disk, so any of them runs on its own. Both components also stay
-runnable directly (`cd car_scraper && python main.py`,
+runnable directly (`cd car_scraper && python scrape.py`,
 `python dashboard/build_dashboard.py`) if you'd rather bypass the orchestrator.
 
 ---
@@ -44,12 +44,12 @@ runnable directly (`cd car_scraper && python main.py`,
 ## 🗂️ Structure
 
 ```
-Belgium_Car_Market/
+car_market_analysis/
 │
 ├── main.py                      # Pipeline entry point — scrape / dashboard / serve
 │
 ├── car_scraper/                 # Scraping pipeline
-│   ├── main.py                  # Scraper stage — runs the enabled scrapers
+│   ├── scrape.py                # Scrape stage — runs the enabled site scrapers
 │   ├── config.json              # What to scrape (targets, limits, strategy)
 │   ├── config_de_market.json    # Config for the market-wide sweep
 │   ├── makes_de.txt             # Editable make-id list for that sweep
@@ -140,7 +140,7 @@ Rows missing make/model/price, or with out-of-range years, are skipped during va
 ### Architecture
 
 ```
-car_scraper/main.py
+car_scraper/scrape.py
   └── AutoScoutScraper.run()          ← autoscout_scraper.py
   │     ├── crawl_detail()            ← one request per ad, full field set
   │     └── crawl_search()            ← result-page payload, ~20x fewer requests

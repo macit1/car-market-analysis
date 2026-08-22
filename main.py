@@ -59,15 +59,8 @@ def run_scrape(args):
     sys.path.insert(0, str(SCRAPER_DIR))
     os.chdir(SCRAPER_DIR)
     try:
-        scraper_main = _load(SCRAPER_DIR / "main.py", "car_scraper_main")
-        sites = args.site
-        if not sites:
-            import json
-            try:
-                sites = json.loads((SCRAPER_DIR / "config.json").read_text(encoding="utf-8")).get("sites")
-            except Exception:
-                sites = None
-        scraper_main.main(sites)
+        scrape = _load(SCRAPER_DIR / "scrape.py", "car_scraper_scrape")
+        scrape.run(scrape.resolve_sites(args.site))
     finally:
         os.chdir(previous)
         sys.path.remove(str(SCRAPER_DIR))
