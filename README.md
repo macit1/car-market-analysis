@@ -56,7 +56,7 @@ modules, not scripts.
 ## 🗂️ Structure
 
 ```
-car_market_analysis/
+car-market-analysis/
 │
 ├── main.py                      # Pipeline entry point — scrape / dashboard / serve
 ├── requirements.txt             # Python dependencies (scraper + dashboard)
@@ -171,6 +171,8 @@ Every scraper inherits from `BaseScraper` and implements only the site-specific 
 ## 📊 The Dashboard
 
 A single-page dashboard — vanilla HTML, CSS and JavaScript with Chart.js, no build step, no backend.
+
+![Dashboard screenshot](docs/dashboard.png)
 
 ### Build the data
 
